@@ -5,11 +5,11 @@ import Header from '@/components/Header';
 import ConvertInput from '@/components/ConvertInput';
 import ProductCard from '@/components/ProductCard';
 import VoucherButtons from '@/components/VoucherButtons';
-import ConversionHistory from '@/components/ConversionHistory';
 import ZaloCommunityCard from '@/components/ZaloCommunityCard';
 import FloatingZaloWidget from '@/components/FloatingZaloWidget';
-import { ConvertResult, ShopeeProduct, ThemeConfig } from '@/lib/types';
-import { Sparkles, ShieldCheck, Zap } from 'lucide-react';
+import Footer from '@/components/Footer';
+import { ConvertResult, ThemeConfig } from '@/lib/types';
+import { Sparkles } from 'lucide-react';
 
 interface HomeClientProps {
   initialTheme: ThemeConfig;
@@ -19,19 +19,13 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [history, setHistory] = useState<Array<{ product: ShopeeProduct; timestamp: string }>>([]);
-  const [theme] = useState<ThemeConfig>(initialTheme);
+  const [theme, setTheme] = useState<ThemeConfig>(initialTheme);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('shopee_converter_history');
-      if (saved) {
-        setHistory(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore
+    if (initialTheme) {
+      setTheme(initialTheme);
     }
-  }, []);
+  }, [initialTheme]);
 
   const handleConvert = async (url: string) => {
     setIsLoading(true);
@@ -52,20 +46,6 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
       }
 
       setResult(data);
-
-      if (data.product) {
-        const updated = [
-          { product: data.product, timestamp: new Date().toISOString() },
-          ...history.filter((h) => h.product.itemId !== data.product?.itemId),
-        ].slice(0, 10);
-
-        setHistory(updated);
-        try {
-          localStorage.setItem('shopee_converter_history', JSON.stringify(updated));
-        } catch {
-          // Ignore
-        }
-      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Lỗi kết nối server.');
     } finally {
@@ -73,26 +53,10 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
     }
   };
 
-  const handleClearHistory = () => {
-    setHistory([]);
-    try {
-      localStorage.removeItem('shopee_converter_history');
-    } catch {
-      // Ignore
-    }
-  };
+  const isImageBg = theme?.backgroundType === 'image' && Boolean(theme?.backgroundImageUrl);
 
   const getContainerStyle = () => {
     if (!theme) return {};
-
-    if (theme.backgroundType === 'image' && theme.backgroundImageUrl) {
-      return {
-        backgroundImage: `linear-gradient(rgba(11, 15, 25, ${(theme.backgroundOverlayOpacity ?? 85) / 100}), rgba(11, 15, 25, ${(theme.backgroundOverlayOpacity ?? 85) / 100})), url('${theme.backgroundImageUrl}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      };
-    }
 
     if (theme.backgroundType === 'gradient') {
       return {
@@ -112,85 +76,76 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
   return (
     <div
       style={getContainerStyle()}
-      className="min-h-screen pb-24 sm:pb-20 flex flex-col items-center transition-colors duration-300 relative"
+      className="min-h-screen flex flex-col items-center justify-between transition-colors duration-300 relative"
     >
+      {/* Hardware-accelerated fixed background to prevent mobile scroll jank */}
+      {isImageBg && (
+        <div
+          className="fixed inset-0 pointer-events-none z-[-1] transform-gpu bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(rgba(11, 15, 25, ${(theme.backgroundOverlayOpacity ?? 85) / 100}), rgba(11, 15, 25, ${(theme.backgroundOverlayOpacity ?? 85) / 100})), url('${theme.backgroundImageUrl}')`,
+          }}
+        />
+      )}
+
       <Header theme={theme} />
 
-      <main className="w-full max-w-xl px-3 sm:px-4 pt-4 sm:pt-5 space-y-4">
-        {/* Dynamic Hero Section (Instant Server-Rendered, 0ms Lag) */}
-        <div className="text-center space-y-1.5 py-1">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>{theme.bannerBadgeText || 'Tự động kích hoạt mã giảm giá sâu nhất'}</span>
+      <main className="w-full max-w-xl px-3 sm:px-4 pt-4 sm:pt-5 pb-8 flex-1 flex flex-col justify-between">
+        <div className="space-y-4">
+          {/* Dynamic Hero Section (Instant Server-Rendered, 0ms Lag) */}
+          <div className="text-center space-y-1.5 py-1">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{theme.bannerBadgeText || 'Tự động kích hoạt mã giảm giá sâu nhất'}</span>
+            </div>
+            <h1 className="text-2xl font-black text-white tracking-tight sm:text-3xl">
+              {theme.heroTitle || 'Chuyển Đổi Link Shopee'}
+            </h1>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
+              {theme.heroSubtitle || 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.'}
+            </p>
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight sm:text-3xl">
-            {theme.heroTitle || 'Chuyển Đổi Link Shopee'}
-          </h1>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
-            {theme.heroSubtitle || 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.'}
-          </p>
+
+          {/* Input Form */}
+          <ConvertInput onConvert={handleConvert} isLoading={isLoading} />
+
+          {/* Error Alert */}
+          {errorMsg && (
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-3 text-center text-xs font-medium text-rose-300">
+              ⚠️ {errorMsg}
+            </div>
+          )}
+
+          {/* Result: Product Card & Voucher Buttons */}
+          {result?.product && result.links && result.vouchers && (
+            <div className="space-y-3.5 pt-1 animate-fadeIn">
+              <ProductCard
+                product={result.product}
+              />
+
+              <VoucherButtons
+                vouchers={result.vouchers}
+                links={result.links}
+                product={result.product}
+                productName={result.product.productName}
+              />
+            </div>
+          )}
+
+          {/* Zalo Support Community Card with Sanity Dynamic Controls */}
+          <ZaloCommunityCard
+            zaloUrl={theme.zaloGroupUrl}
+            showCard={theme.showZaloCard}
+            title={theme.zaloCardTitle}
+            subtitle={theme.zaloCardSubtitle}
+            membersText={theme.zaloCardMembers}
+            buttonText={theme.zaloCardButtonText}
+          />
         </div>
 
-        {/* Input Form */}
-        <ConvertInput onConvert={handleConvert} isLoading={isLoading} />
-
-        {/* Error Alert */}
-        {errorMsg && (
-          <div className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-3 text-center text-xs font-medium text-rose-300">
-            ⚠️ {errorMsg}
-          </div>
-        )}
-
-        {/* Result: Product Card & Voucher Buttons */}
-        {result?.product && result.links && result.vouchers && (
-          <div className="space-y-3.5 pt-1 animate-fadeIn">
-            <ProductCard
-              product={result.product}
-              savingsEstimate={result.savingsEstimate}
-            />
-
-            <VoucherButtons
-              vouchers={result.vouchers}
-              links={result.links}
-              productName={result.product.productName}
-              conversionLogId={result.conversionLogId}
-            />
-          </div>
-        )}
-
-        {/* Zalo Support Community Card with Sanity Dynamic Controls */}
-        <ZaloCommunityCard
-          zaloUrl={theme.zaloGroupUrl}
-          showCard={theme.showZaloCard}
-          title={theme.zaloCardTitle}
-          subtitle={theme.zaloCardSubtitle}
-          membersText={theme.zaloCardMembers}
-          buttonText={theme.zaloCardButtonText}
-        />
-
-        {/* User Conversion History */}
-        <ConversionHistory
-          history={history}
-          onSelect={handleConvert}
-          onClear={handleClearHistory}
-        />
-
-        {/* Footer Trust Badges */}
-        <div className="pt-3 text-center space-y-1.5">
-          <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              Mở App Shopee Chính Hãng
-            </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <Zap className="h-3.5 w-3.5 text-orange-400" />
-              Cập nhật mã Real-time
-            </span>
-          </div>
-          <p className="text-[10px] text-slate-600">
-            © 2026 {theme.logoText || 'SALE'}{theme.logoHighlightText || 'SỐC'} Affiliate Converter. All rights reserved.
-          </p>
+        {/* Rich Navigation Footer Pushed to Bottom */}
+        <div className="mt-auto pt-6">
+          <Footer theme={theme} />
         </div>
       </main>
 

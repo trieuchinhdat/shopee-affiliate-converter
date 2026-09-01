@@ -8,13 +8,23 @@ interface ConvertInputProps {
   isLoading: boolean;
 }
 
-// Smart URL Extractor: extracts pure Shopee URL from messy shared text
+// Smart URL Extractor: extracts pure Shopee URL from messy shared text or direct inputs
 export function extractShopeeUrl(text: string): string | null {
   if (!text) return null;
-  const match = text.match(/(https?:\/\/(?:[a-zA-Z0-9-]+\.)*(?:shopee\.vn|shp\.ee)[^\s]*)/i);
+  const cleanText = text.trim();
+
+  // Pattern with http/https
+  const match = cleanText.match(/(https?:\/\/(?:[a-zA-Z0-9-]+\.)*(?:shopee\.[a-z.]+|shp\.ee|shope\.ee)[^\s]*)/i);
   if (match && match[1]) {
-    return match[1].replace(/[.,;:!?)\]]+$/, '').trim();
+    return match[1].replace(/[.,;:!?)\]"'>]+$/, '').trim();
   }
+
+  // Pattern without http/https (e.g. shopee.vn/product/... or s.shopee.vn/...)
+  const matchNoProto = cleanText.match(/((?:[a-zA-Z0-9-]+\.)*(?:shopee\.[a-z.]+|shp\.ee|shope\.ee)\/[^\s]*)/i);
+  if (matchNoProto && matchNoProto[1]) {
+    return `https://${matchNoProto[1].replace(/[.,;:!?)\]"'>]+$/, '').trim()}`;
+  }
+
   return null;
 }
 
@@ -120,10 +130,10 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="relative flex flex-col gap-2">
-        {/* Input Bar */}
-        <div className="relative flex items-center rounded-2xl border border-white/10 bg-[#111827] p-1 shadow-xl transition-all focus-within:border-orange-500/70 focus-within:ring-2 focus-within:ring-orange-500/20">
-          <div className="pl-3 text-slate-400">
+      <form onSubmit={handleSubmit} className="relative flex flex-col gap-2.5">
+        {/* Prominent Input Bar */}
+        <div className="relative flex items-center rounded-2xl border-2 border-orange-500/50 bg-[#111827] p-1.5 shadow-lg shadow-orange-950/30 transition-all hover:border-orange-400 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-500/25">
+          <div className="pl-3 text-orange-400">
             <LinkIcon className="h-4 w-4" />
           </div>
 
@@ -134,7 +144,7 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
             onChange={(e) => setUrl(e.target.value)}
             onPaste={handleNativePaste}
             placeholder="Dán link Shopee (vd: https://s.shopee.vn/...)"
-            className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none"
+            className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none"
             disabled={isLoading}
           />
 
@@ -151,7 +161,7 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
             <button
               type="button"
               onClick={handleSmartAction}
-              className="mr-1 flex items-center gap-1 rounded-xl bg-white/5 border border-white/10 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 hover:text-white transition-colors shrink-0"
+              className="mr-1 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 py-1.5 text-xs font-bold text-orange-300 hover:bg-orange-500/25 hover:text-white transition-all shrink-0"
               title="Dán từ bộ nhớ tạm"
             >
               <Clipboard className="h-3.5 w-3.5" />
@@ -160,12 +170,12 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
           )}
         </div>
 
-        {/* Clean Action Button */}
+        {/* Clean Action Button with Generous Mobile Padding */}
         <button
           type="button"
           onClick={handleSmartAction}
           disabled={isLoading}
-          className={`relative flex h-13 sm:h-14 w-full items-center justify-center gap-2 rounded-2xl font-bold text-sm sm:text-base text-white shadow-xl transition-all active:scale-[0.98] disabled:opacity-75 ${
+          className={`relative flex min-h-[54px] sm:min-h-[58px] w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 font-extrabold text-sm sm:text-base tracking-wide text-white shadow-xl transition-all active:scale-[0.98] disabled:opacity-75 ${
             url.trim()
               ? 'bg-gradient-to-r from-[#ee4d2d] via-orange-500 to-amber-500 shadow-orange-500/35 hover:brightness-110'
               : 'bg-gradient-to-r from-[#ee4d2d] via-orange-600 to-amber-600 shadow-orange-600/30 hover:brightness-110'

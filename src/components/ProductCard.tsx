@@ -7,18 +7,13 @@ import { ShieldCheck } from 'lucide-react';
 
 interface ProductCardProps {
   product: ShopeeProduct;
-  savingsEstimate?: {
-    percent: number;
-    amount: number;
-    formattedAmount: string;
-  };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111827] p-3.5 sm:p-4 shadow-2xl transition-all">
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111827] p-3.5 sm:p-4 shadow-2xl transition-all transform-gpu">
       <div className="flex gap-3 items-center">
-        <div className="relative h-20 w-20 sm:h-22 sm:w-22 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+        <div className="relative h-20 w-20 sm:h-24 sm:w-24 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-black/30">
           {product.imageUrl ? (
             <Image
               src={product.imageUrl}
@@ -41,16 +36,18 @@ export default function ProductCard({ product }: ProductCardProps) {
           <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold text-slate-100 leading-snug">
             {product.productName}
           </h3>
-          {product.formattedPrice ? (
-            <p className="mt-1 text-sm sm:text-base font-extrabold text-orange-400 font-mono">
-              {product.formattedPrice}
-            </p>
-          ) : (
-            <p className="mt-1 text-[11px] text-slate-400 flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-              <span>Sản phẩm chính hãng Shopee</span>
-            </p>
-          )}
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
+            {product.formattedPrice ? (
+              <span className="text-sm sm:text-base font-extrabold text-orange-400 font-mono">
+                {product.formattedPrice}
+              </span>
+            ) : (
+              <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                <span>Sản phẩm chính hãng Shopee</span>
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

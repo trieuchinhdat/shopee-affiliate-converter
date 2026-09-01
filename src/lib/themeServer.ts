@@ -1,12 +1,13 @@
+import { cache } from 'react';
 import { sanityClient } from '@/sanity/client';
-import { urlForImage } from '@/sanity/image';
+import { urlForImage, urlForOgImage } from '@/sanity/image';
 import { ThemeConfig } from '@/lib/types';
 
-export async function getThemeConfig(): Promise<ThemeConfig> {
+export const getThemeConfig = cache(async (): Promise<ThemeConfig> => {
   try {
     const [rawTheme, rawAppConfig] = await Promise.all([
       sanityClient.fetch<any>(
-        `*[_type == "themeConfig"][0]{
+        `*[_type == "themeConfig"] | order(_updatedAt desc)[0]{
           logoType,
           logoText,
           logoHighlightText,
@@ -28,24 +29,34 @@ export async function getThemeConfig(): Promise<ThemeConfig> {
           zaloCardMembers,
           zaloCardButtonText,
           showFloatingZalo,
-          floatingZaloText
+          floatingZaloText,
+          metaTitle,
+          metaDescription,
+          metaKeywords,
+          ogImage,
+          canonicalUrl
         }`,
         {},
-        { next: { revalidate: 0 } }
+        { cache: 'no-store' }
       ),
       sanityClient.fetch<any>(
-        `*[_type == "appConfig"][0]{
+        `*[_type == "appConfig"] | order(_updatedAt desc)[0]{
           zaloGroupUrl
         }`,
         {},
-        { next: { revalidate: 0 } }
+        { cache: 'no-store' }
       ),
     ]);
 
+    const heroTitle = rawTheme?.heroTitle || 'Chuyển Đổi Link Shopee';
+    const heroSubtitle = rawTheme?.heroSubtitle || 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.';
+    const logoText = rawTheme?.logoText || 'SALE';
+    const logoHighlightText = rawTheme?.logoHighlightText || 'SỐC';
+
     return {
       logoType: rawTheme?.logoType || 'text',
-      logoText: rawTheme?.logoText || 'SALE',
-      logoHighlightText: rawTheme?.logoHighlightText || 'SỐC',
+      logoText,
+      logoHighlightText,
       logoBadge: rawTheme?.logoBadge || 'VIP',
       logoImageUrl: rawTheme?.logoImage ? urlForImage(rawTheme.logoImage) : undefined,
       subTitle: rawTheme?.subTitle || 'Voucher Hunter Shopee',
@@ -56,8 +67,8 @@ export async function getThemeConfig(): Promise<ThemeConfig> {
       backgroundImageUrl: rawTheme?.backgroundImage ? urlForImage(rawTheme.backgroundImage) : undefined,
       backgroundOverlayOpacity: typeof rawTheme?.backgroundOverlayOpacity === 'number' ? rawTheme.backgroundOverlayOpacity : 85,
       bannerBadgeText: rawTheme?.bannerBadgeText || 'Tự động kích hoạt mã giảm giá sâu nhất',
-      heroTitle: rawTheme?.heroTitle || 'Chuyển Đổi Link Shopee',
-      heroSubtitle: rawTheme?.heroSubtitle || 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.',
+      heroTitle,
+      heroSubtitle,
       zaloGroupUrl: rawAppConfig?.zaloGroupUrl || 'https://zalo.me/g/kczvyi443',
       showZaloCard: rawTheme?.showZaloCard !== false,
       zaloCardTitle: rawTheme?.zaloCardTitle || 'Nhóm Zalo Báo Mã Săn Sale',
@@ -66,6 +77,12 @@ export async function getThemeConfig(): Promise<ThemeConfig> {
       zaloCardButtonText: rawTheme?.zaloCardButtonText || 'Vào Nhóm Zalo Săn Sale (Miễn Phí)',
       showFloatingZalo: rawTheme?.showFloatingZalo !== false,
       floatingZaloText: rawTheme?.floatingZaloText || 'Nhận mã 22% & mã Live sớm nhất! 💬',
+      // SEO Metadata
+      metaTitle: rawTheme?.metaTitle || `${heroTitle} - ${logoText}${logoHighlightText} Voucher Shopee`,
+      metaDescription: rawTheme?.metaDescription || heroSubtitle,
+      metaKeywords: rawTheme?.metaKeywords || 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
+      ogImageUrl: rawTheme?.ogImage ? urlForOgImage(rawTheme.ogImage) : rawTheme?.backgroundImage ? urlForOgImage(rawTheme.backgroundImage) : undefined,
+      canonicalUrl: rawTheme?.canonicalUrl || process.env.NEXT_PUBLIC_SITE_URL || undefined,
     };
   } catch (err) {
     console.error('[SSR Theme] Error fetching theme from Sanity:', err);
@@ -90,6 +107,10 @@ export async function getThemeConfig(): Promise<ThemeConfig> {
       zaloCardButtonText: 'Vào Nhóm Zalo Săn Sale (Miễn Phí)',
       showFloatingZalo: true,
       floatingZaloText: 'Nhận mã 22% & mã Live sớm nhất! 💬',
+      metaTitle: 'Săn Mã Shopee - Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%',
+      metaDescription: 'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.',
+      metaKeywords: 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
+      canonicalUrl: process.env.NEXT_PUBLIC_SITE_URL || undefined,
     };
   }
-}
+});

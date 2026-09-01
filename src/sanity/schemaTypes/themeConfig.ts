@@ -185,6 +185,45 @@ export const themeConfig = defineType({
       initialValue: 'Nhận mã 22% & mã Live sớm nhất! 💬',
       hidden: ({ parent }) => parent?.showFloatingZalo === false,
     }),
+
+    // --- 6. CÀI ĐẶT SEO & CHIA SẺ MẠNG XÃ HỘI (METADATA) ---
+    defineField({
+      name: 'metaTitle',
+      title: 'Tiêu đề SEO (Meta Title)',
+      description: 'Tiêu đề hiển thị trên Google và tab trình duyệt (Để trống sẽ tự động lấy Tiêu đề chính)',
+      type: 'string',
+      validation: (Rule) => Rule.max(70).warning('Nên dưới 70 ký tự để hiển thị tốt nhất trên Google'),
+    }),
+    defineField({
+      name: 'metaDescription',
+      title: 'Mô tả SEO (Meta Description)',
+      description: 'Mô tả ngắn gọn hiển thị trên kết quả tìm kiếm Google (Để trống sẽ tự động lấy Mô tả phụ)',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.max(160).warning('Nên dưới 160 ký tự để tránh bị Google cắt bớt'),
+    }),
+    defineField({
+      name: 'metaKeywords',
+      title: 'Từ khóa SEO (Keywords)',
+      description: 'Các từ khóa ngăn cách bằng dấu phẩy. Ví dụ: săn mã shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live',
+      type: 'string',
+      initialValue: 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
+    }),
+    defineField({
+      name: 'ogImage',
+      title: 'Ảnh xem trước khi chia sẻ (OpenGraph / Social Image)',
+      description: 'Ảnh hiển thị khi chia sẻ link lên Zalo, Facebook, Messenger, Telegram. Khuyến nghị tỉ lệ chuẩn 1200x630px',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+    }),
+    defineField({
+      name: 'canonicalUrl',
+      title: 'Tên miền chính thức (Canonical URL)',
+      description: 'Ví dụ: https://sanmakhuyenmai.vn (Để trống sẽ tự động nhận diện theo domain truy cập)',
+      type: 'url',
+    }),
   ],
   preview: {
     select: {

@@ -7,3 +7,8 @@ export function urlForImage(source: any) {
   if (!source || !source.asset) return '';
   return builder.image(source).auto('format').fit('max').url();
 }
+
+export function urlForOgImage(source: any) {
+  if (!source || !source.asset) return '';
+  return builder.image(source).width(1200).height(630).fit('crop').auto('format').url();
+}

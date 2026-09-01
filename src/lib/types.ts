@@ -29,6 +29,7 @@ export interface VoucherItem {
   minSpend?: number;
   description: string;
   status: 'active' | 'expired' | 'incoming';
+  isActive?: boolean;
   isHighlighted?: boolean;
   orderPriority: number;
   usageProgress?: number;
@@ -62,6 +63,28 @@ export interface ThemeConfig {
   // Floating Chatbox Settings
   showFloatingZalo?: boolean;
   floatingZaloText?: string;
+  // SEO & Social Sharing Metadata
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  ogImageUrl?: string;
+  canonicalUrl?: string;
+}
+
+export interface FacebookSampleItem {
+  url: string;
+  label?: string;
+  isActive?: boolean;
+}
+
+export interface FacebookTemplatePayload {
+  encryptedPayload: string;
+  fbContentId: string;
+  gadsTSig?: string;
+  utmCampaign: string;
+  expGroup?: string;
+  contentType?: string;
+  contentSource?: string;
 }
 
 export interface AppConfig {
@@ -70,6 +93,12 @@ export interface AppConfig {
   savingsNotice?: string;
   zaloGroupUrl?: string;
   autoBlinkTopDiscount?: boolean;
+  facebookSampleUrls?: FacebookSampleItem[];
+  // Telegram Notification Settings
+  enableTelegramNotify?: boolean;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  telegramCooldownSeconds?: number;
 }
 
 export interface ConvertResult {
@@ -83,12 +112,20 @@ export interface ConvertResult {
     amount: number;
     formattedAmount: string;
   };
-  conversionLogId?: string;
 }
 
-export interface ClickTrackPayload {
-  conversionLogId?: string;
-  channel: 'fb_22' | 'fb_20' | 'ytb' | 'ig' | 'zalo';
-  targetUrl: string;
-  productName?: string;
+export interface NotifyClickPayload {
+  product?: {
+    productName: string;
+    shopId?: string;
+    itemId?: string;
+    imageUrl?: string;
+  };
+  voucher?: {
+    voucherCode?: string;
+    buttonLabel?: string;
+    channel?: string;
+    discountPercent?: number;
+  };
+  targetUrl?: string;
 }

@@ -6,6 +6,13 @@ export const voucher = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'isActive',
+      title: 'Bật / Tắt voucher này',
+      description: 'Gạt BẬT để kích hoạt và hiển thị nút mã trên web. Gạt TẮT để ẩn hoàn toàn mã này.',
+      type: 'boolean',
+      initialValue: true,
+    }),
+    defineField({
       name: 'voucherCode',
       title: 'Mã giảm giá (Coupon Code)',
       description: 'Mã khuyến mãi trên Shopee (vd: FB22SALE, YOUTUBE20)',
@@ -65,7 +72,7 @@ export const voucher = defineType({
     }),
     defineField({
       name: 'status',
-      title: 'Trạng thái voucher',
+      title: 'Trạng thái hiển thị phụ',
       type: 'string',
       options: {
         list: [
@@ -105,13 +112,14 @@ export const voucher = defineType({
       status: 'status',
       discount: 'discountPercent',
       hot: 'isHighlighted',
+      active: 'isActive',
     },
-    prepare({ title, code, status, discount, hot }) {
-      const statusIcon = status === 'active' ? '🟢' : status === 'expired' ? '🔴' : '🟡';
+    prepare({ title, code, status, discount, hot, active }) {
+      const activeStatus = active !== false ? '🟢' : '⚪ [TẮT]';
       const hotTag = hot ? '🔥 [HOT]' : '';
       return {
-        title: `${statusIcon} ${title} - Giảm ${discount}% ${hotTag}`,
-        subtitle: `Mã: ${code} (${status})`,
+        title: `${activeStatus} ${title} - Giảm ${discount}% ${hotTag}`,
+        subtitle: `Mã: ${code} (${active !== false ? status : 'Đang tắt'})`,
       };
     },
   },
