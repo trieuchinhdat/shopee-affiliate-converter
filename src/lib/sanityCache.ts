@@ -18,9 +18,10 @@ function getCached<T>(key: string): T | null {
 }
 
 function setCached<T>(key: string, data: T, ttlSeconds: number = 60): T {
+  const actualTtl = process.env.NODE_ENV === 'development' ? 2 : ttlSeconds;
   memoryCache.set(key, {
     data,
-    expiresAt: Date.now() + ttlSeconds * 1000,
+    expiresAt: Date.now() + actualTtl * 1000,
   });
   return data;
 }
@@ -236,6 +237,7 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
           bannerSlides[]{
             _key,
             title,
+            image,
             desktopImage,
             mobileImage,
             linkUrl,
@@ -278,30 +280,38 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
     const parsedSlides: BannerSlideItem[] = Array.isArray(rawTheme?.bannerSlides)
       ? rawTheme.bannerSlides
           .filter((s: any) => s && s.isActive !== false)
-          .map((s: any) => ({
-            _key: s._key,
-            title: s.title || 'Banner Khuyến Mãi Shopee',
-            desktopImageUrl: s.desktopImage ? urlForImage(s.desktopImage) : undefined,
-            mobileImageUrl: s.mobileImage
-              ? urlForImage(s.mobileImage)
-              : (s.desktopImage ? urlForImage(s.desktopImage) : undefined),
-            linkUrl: s.linkUrl || undefined,
-            openInNewTab: s.openInNewTab !== false,
-            isActive: s.isActive !== false,
-          }))
-          .filter((s: BannerSlideItem) => Boolean(s.desktopImageUrl || s.mobileImageUrl))
+          .map((s: any) => {
+            const singleImg = s.image ? urlForImage(s.image) : undefined;
+            const desktopImg = s.desktopImage ? urlForImage(s.desktopImage) : undefined;
+            const mobileImg = s.mobileImage ? urlForImage(s.mobileImage) : undefined;
+            const resolvedImg = singleImg || desktopImg || mobileImg;
+
+            return {
+              _key: s._key,
+              title: s.title || 'Banner Khuyến Mãi Shopee',
+              imageUrl: resolvedImg,
+              desktopImageUrl: resolvedImg,
+              mobileImageUrl: resolvedImg,
+              linkUrl: s.linkUrl || undefined,
+              openInNewTab: s.openInNewTab !== false,
+              isActive: s.isActive !== false,
+            };
+          })
+          .filter((s: BannerSlideItem) => Boolean(s.imageUrl || s.desktopImageUrl || s.mobileImageUrl))
       : [];
 
     // Fallback to legacy single banner if slides are not configured yet
     if (parsedSlides.length === 0 && rawTheme?.heroBannerDesktopImage) {
       const legacyDesktop = urlForImage(rawTheme.heroBannerDesktopImage);
       const legacyMobile = rawTheme.heroBannerMobileImage ? urlForImage(rawTheme.heroBannerMobileImage) : legacyDesktop;
-      if (legacyDesktop) {
+      const legacyImg = legacyDesktop || legacyMobile;
+      if (legacyImg) {
         parsedSlides.push({
           _key: 'legacy-banner-slide',
           title: rawTheme.heroBannerAltText || 'Banner Siêu Sale Shopee',
-          desktopImageUrl: legacyDesktop,
-          mobileImageUrl: legacyMobile,
+          imageUrl: legacyImg,
+          desktopImageUrl: legacyImg,
+          mobileImageUrl: legacyImg,
           linkUrl: rawTheme.heroBannerLink || undefined,
           openInNewTab: true,
           isActive: true,

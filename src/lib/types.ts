@@ -50,6 +50,7 @@ export interface VoucherItem {
 export interface BannerSlideItem {
   _key?: string;
   title?: string;
+  imageUrl?: string;
   desktopImageUrl?: string;
   mobileImageUrl?: string;
   linkUrl?: string;

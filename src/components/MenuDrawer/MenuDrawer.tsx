@@ -29,11 +29,11 @@ export default function MenuDrawer({ isOpen, onClose, theme }: MenuDrawerProps) 
     if (isOpen) {
       setIsRendered(true);
       setCurrentView('menu');
-      // Trigger slide-in transition on next animation frame
-      const frame = requestAnimationFrame(() => {
+      // Use short timeout to ensure initial off-screen translate-x-full is committed to DOM
+      const timer = setTimeout(() => {
         setIsVisible(true);
-      });
-      return () => cancelAnimationFrame(frame);
+      }, 25);
+      return () => clearTimeout(timer);
     } else {
       setIsVisible(false);
       const timer = setTimeout(() => {

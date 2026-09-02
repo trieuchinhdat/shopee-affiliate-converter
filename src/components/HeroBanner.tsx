@@ -112,25 +112,23 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
   // --- 1. SINGLE SLIDE BANNER (No slider navigation needed) ---
   if (slides.length === 1) {
     const slide = slides[0];
-    const desktopImg = slide.desktopImageUrl || slide.mobileImageUrl;
-    const mobileImg = slide.mobileImageUrl || slide.desktopImageUrl;
+    const bannerImg = slide.imageUrl || slide.desktopImageUrl || slide.mobileImageUrl;
 
     return (
       <div className="w-full pt-1 pb-1 animate-fadeIn">
         {seoHeading}
         <div
           onClick={() => handleSlideClick(slide)}
-          className="group relative cursor-pointer overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-black/40 shadow-lg transition-all duration-300 hover:border-orange-500/50 hover:shadow-orange-500/20 active:scale-[0.99]"
+          className="group relative cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-md transition-colors duration-200 hover:border-orange-500/40 active:opacity-95"
         >
-          <picture className="block w-full">
-            {desktopImg && <source media="(min-width: 640px)" srcSet={desktopImg} />}
+          {bannerImg && (
             <img
-              src={mobileImg || desktopImg}
+              src={bannerImg}
               alt={slide.title || 'Banner Khuyến Mãi Shopee'}
               loading="eager"
-              className="w-full h-auto object-cover aspect-[2.9/1] sm:aspect-[3.6/1] transition-transform duration-500 group-hover:scale-[1.015]"
+              className="w-full h-auto object-cover aspect-[10/3]"
             />
-          </picture>
+          )}
 
           {/* Target link subtle badge */}
           {slide.linkUrl && (
@@ -151,18 +149,17 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
       {seoHeading}
 
       <div
-        className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-black/40 shadow-lg transition-all duration-300 hover:border-orange-500/40 select-none"
+        className="group relative overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-md transition-colors duration-200 hover:border-orange-500/40 select-none"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         {/* Slides Track */}
-        <div className="relative w-full aspect-[2.9/1] sm:aspect-[3.6/1] overflow-hidden">
+        <div className="relative w-full aspect-[10/3] overflow-hidden">
           {slides.map((slide, index) => {
             const isCurrent = index === currentIndex;
-            const desktopImg = slide.desktopImageUrl || slide.mobileImageUrl;
-            const mobileImg = slide.mobileImageUrl || slide.desktopImageUrl;
+            const bannerImg = slide.imageUrl || slide.desktopImageUrl || slide.mobileImageUrl;
 
             return (
               <div
@@ -172,15 +169,14 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
                   isCurrent ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                <picture className="block w-full h-full">
-                  {desktopImg && <source media="(min-width: 640px)" srcSet={desktopImg} />}
+                {bannerImg && (
                   <img
-                    src={mobileImg || desktopImg}
+                    src={bannerImg}
                     alt={slide.title || `Banner Khuyến Mãi ${index + 1}`}
                     loading={index === 0 ? 'eager' : 'lazy'}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015]"
+                    className="w-full h-full object-cover"
                   />
-                </picture>
+                )}
 
                 {/* Target link subtle badge */}
                 {slide.linkUrl && (

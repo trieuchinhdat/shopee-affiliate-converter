@@ -4,12 +4,12 @@ export const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'bcs6f8g2'
 export const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
 export const apiVersion = '2024-01-01';
 
-// Public fast client utilizing Sanity's global Edge CDN (10M free requests/month quota)
+// Public fast client (bypasses CDN in local dev for instant updates, uses Edge CDN in production)
 export const sanityClient = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: true,
+  useCdn: process.env.NODE_ENV === 'production',
   token: process.env.SANITY_API_READ_TOKEN || '',
   perspective: 'published',
 });

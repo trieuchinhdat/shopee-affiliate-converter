@@ -196,23 +196,14 @@ export const themeConfig = defineType({
               validation: (Rule) => Rule.required().error('Vui lòng nhập tên/tiêu đề gợi nhớ cho slide'),
             }),
             defineField({
-              name: 'desktopImage',
-              title: '🖼️ Ảnh Banner cho Máy Tính (Desktop)',
-              description: 'Tỉ lệ chuẩn ngang 3.5:1 hoặc 4:1 (VD: 1200x320px hoặc 1000x280px). Bắt buộc.',
+              name: 'image',
+              title: '🖼️ Hình ảnh Banner (Dùng chung Desktop & Mobile)',
+              description: 'Tải lên 1 hình ảnh dùng chung cho cả Máy tính & Điện thoại. Chuẩn kích thước tỉ lệ 10:3 (1200x360px hoặc 900x270px) để hiển thị trọn vẹn 100% không bị cắt.',
               type: 'image',
               options: {
                 hotspot: true,
               },
-              validation: (Rule) => Rule.required().error('Vui lòng tải ảnh banner Desktop'),
-            }),
-            defineField({
-              name: 'mobileImage',
-              title: '📱 Ảnh Banner cho Điện Thoại (Mobile)',
-              description: 'Tỉ lệ chuẩn ngang 2.8:1 hoặc 3:1 (VD: 750x260px hoặc 600x210px). Nếu để trống sẽ tự lấy ảnh Desktop.',
-              type: 'image',
-              options: {
-                hotspot: true,
-              },
+              validation: (Rule) => Rule.required().error('Vui lòng tải ảnh banner'),
             }),
             defineField({
               name: 'linkUrl',
@@ -238,15 +229,16 @@ export const themeConfig = defineType({
             select: {
               title: 'title',
               linkUrl: 'linkUrl',
-              media: 'desktopImage',
+              media: 'image',
+              desktopMedia: 'desktopImage',
               isActive: 'isActive',
             },
-            prepare({ title, linkUrl, media, isActive }) {
+            prepare({ title, linkUrl, media, desktopMedia, isActive }) {
               const statusText = isActive === false ? '⛔ Đang tắt' : '🟢 Đang hoạt động';
               return {
                 title: `${title || 'Chưa đặt tên'} (${statusText})`,
                 subtitle: linkUrl ? `🔗 ${linkUrl}` : '⚠️ Chưa gắn link điều hướng',
-                media,
+                media: media || desktopMedia,
               };
             },
           },
