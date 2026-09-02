@@ -11,7 +11,7 @@ interface FooterProps {
 
 export default function Footer({ theme }: FooterProps) {
   const brandName = theme?.logoText || 'SALE';
-  const highlightName = theme?.logoHighlightText || 'SỐC';
+  const highlightName = theme?.logoHighlightText || 'HUNTER';
 
   return (
     <footer className="w-full text-center space-y-2.5 pb-2">

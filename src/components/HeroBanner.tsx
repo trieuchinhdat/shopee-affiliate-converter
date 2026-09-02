@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { ThemeConfig } from '@/lib/types';
-import { Sparkles, Zap, Flame, ArrowRight, CheckCircle2, Gift } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ThemeConfig, BannerSlideItem } from '@/lib/types';
+import { ChevronLeft, ChevronRight, ExternalLink, Zap } from 'lucide-react';
 
 interface HeroBannerProps {
   theme: ThemeConfig;
@@ -14,15 +14,78 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
     return null;
   }
 
-  const bannerType = theme.heroBannerType || 'compact_text';
+  const slides: BannerSlideItem[] = (theme.bannerSlides || []).filter(
+    (s) => s && s.isActive !== false && (s.desktopImageUrl || s.mobileImageUrl)
+  );
 
-  const handleClickBanner = () => {
-    if (theme.bannerClickAction === 'open_link' && theme.heroBannerLink) {
-      window.open(theme.heroBannerLink, '_blank', 'noopener,noreferrer');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  const autoSlide = theme.bannerAutoSlide !== false;
+  const slideInterval = (theme.bannerAutoSlideInterval && theme.bannerAutoSlideInterval >= 2 ? theme.bannerAutoSlideInterval : 5) * 1000;
+
+  const nextSlide = useCallback(() => {
+    if (slides.length <= 1) return;
+    setCurrentIndex((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
+
+  const prevSlide = useCallback(() => {
+    if (slides.length <= 1) return;
+    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+  }, [slides.length]);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  // Auto-play timer
+  useEffect(() => {
+    if (!autoSlide || slides.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      nextSlide();
+    }, slideInterval);
+
+    return () => clearInterval(timer);
+  }, [autoSlide, slides.length, isPaused, slideInterval, nextSlide]);
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsPaused(true);
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setIsPaused(false);
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+
+    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    // Only register horizontal swipe if movement is primarily horizontal and > 35px
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 35) {
+      if (deltaX > 0) {
+        prevSlide();
+      } else {
+        nextSlide();
+      }
+    }
+
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  };
+
+  const handleSlideClick = (slide: BannerSlideItem) => {
+    if (slide.linkUrl && slide.linkUrl.trim()) {
+      const target = slide.openInNewTab !== false ? '_blank' : '_self';
+      window.open(slide.linkUrl.trim(), target, 'noopener,noreferrer');
       return;
     }
 
-    // Default or 'focus_input' action: focus into input
+    // Default action if no target link: Focus to convert input
     if (onFocusInput) {
       onFocusInput();
     } else {
@@ -34,173 +97,149 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
     }
   };
 
-  // --- 1. MODE: IMAGE BANNER (Responsive Desktop & Mobile with Aspect Ratio) ---
-  if (bannerType === 'image_banner') {
-    const desktopImg = theme.heroBannerDesktopImageUrl;
-    const mobileImg = theme.heroBannerMobileImageUrl;
-    const effectiveImg = mobileImg || desktopImg;
+  // Visually hidden H1 for 100% SEO score without cluttering visual UI
+  const seoHeading = (
+    <h1 className="sr-only">
+      {theme.metaTitle || 'Săn Mã Giảm Giá Shopee - Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%'}
+    </h1>
+  );
 
-    if (!effectiveImg) {
-      // Fallback if no images uploaded yet
-      return (
-        <div className="text-center space-y-1.5 py-1 animate-fadeIn">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>{theme.bannerBadgeText || 'Tự động kích hoạt mã giảm giá sâu nhất'}</span>
-          </div>
-          <h1 className="text-2xl font-black text-white tracking-tight sm:text-3xl">
-            {theme.heroTitle || 'Chuyển Đổi Link Shopee'}
-          </h1>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
-            {theme.heroSubtitle || 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.'}
-          </p>
-        </div>
-      );
-    }
+  // If no slides configured, render only SEO heading gracefully
+  if (slides.length === 0) {
+    return seoHeading;
+  }
+
+  // --- 1. SINGLE SLIDE BANNER (No slider navigation needed) ---
+  if (slides.length === 1) {
+    const slide = slides[0];
+    const desktopImg = slide.desktopImageUrl || slide.mobileImageUrl;
+    const mobileImg = slide.mobileImageUrl || slide.desktopImageUrl;
 
     return (
-      <div className="w-full pt-1 pb-1.5 animate-fadeIn">
+      <div className="w-full pt-1 pb-1 animate-fadeIn">
+        {seoHeading}
         <div
-          onClick={handleClickBanner}
-          className="group relative cursor-pointer overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-black/40 shadow-xl transition-all duration-300 hover:border-orange-500/50 hover:shadow-orange-500/20 active:scale-[0.99]"
+          onClick={() => handleSlideClick(slide)}
+          className="group relative cursor-pointer overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-black/40 shadow-lg transition-all duration-300 hover:border-orange-500/50 hover:shadow-orange-500/20 active:scale-[0.99]"
         >
-          {/* Picture element for zero-layout-shift responsive banner */}
           <picture className="block w-full">
-            {desktopImg && (
-              <source media="(min-width: 640px)" srcSet={desktopImg} />
-            )}
+            {desktopImg && <source media="(min-width: 640px)" srcSet={desktopImg} />}
             <img
-              src={effectiveImg}
-              alt={theme.heroBannerAltText || 'Banner Siêu Sale Shopee'}
+              src={mobileImg || desktopImg}
+              alt={slide.title || 'Banner Khuyến Mãi Shopee'}
               loading="eager"
-              className="w-full h-auto object-cover aspect-[3.2/1] sm:aspect-[3.8/1] transition-transform duration-500 group-hover:scale-[1.02]"
+              className="w-full h-auto object-cover aspect-[2.9/1] sm:aspect-[3.6/1] transition-transform duration-500 group-hover:scale-[1.015]"
             />
           </picture>
 
-          {/* Interactive hover overlay hint */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-3 pointer-events-none">
-            <span className="text-[11px] font-bold text-white flex items-center gap-1 bg-orange-600/90 px-2.5 py-1 rounded-full shadow-md">
-              <Zap className="h-3 w-3 fill-amber-300 text-amber-300" />
-              <span>Dán link nhận mã ngay</span>
-            </span>
-            <ArrowRight className="h-4 w-4 text-white" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // --- 2. MODE: FOMO TICKER (Slim Urgency Alert / Breaking News) ---
-  if (bannerType === 'fomo_ticker') {
-    return (
-      <div className="w-full pt-1 pb-1 animate-fadeIn">
-        <div
-          onClick={handleClickBanner}
-          className="group cursor-pointer flex items-center gap-2.5 rounded-2xl border border-red-500/40 bg-gradient-to-r from-red-950/70 via-orange-950/60 to-red-950/70 p-2.5 sm:p-3 shadow-lg shadow-red-950/40 transition-all hover:border-orange-400 active:scale-[0.99]"
-        >
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-red-600/30 border border-red-500/40 text-red-400 shadow-sm animate-pulse">
-            <Flame className="h-4 w-4 fill-red-400 text-red-400" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-xs sm:text-sm font-extrabold text-white line-clamp-1 leading-tight tracking-tight">
-              {theme.heroTickerText || '🔥 Đang phát mã giảm giá FB 22% & YouTube 20% độc quyền - Tự động áp khi dán link!'}
-            </p>
-          </div>
-
-          <div className="shrink-0 flex items-center gap-1 rounded-xl bg-orange-500/20 border border-orange-500/30 px-2.5 py-1 text-[11px] font-black text-orange-300 group-hover:bg-orange-500 group-hover:text-white transition-all">
-            <span>DÁN NGAY</span>
-            <ArrowRight className="h-3 w-3" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // --- 3. MODE: INTERACTIVE CARD (Mega Sale Event Card) ---
-  if (bannerType === 'interactive_card') {
-    return (
-      <div className="w-full pt-1 pb-1.5 animate-fadeIn">
-        <div
-          onClick={handleClickBanner}
-          className="group cursor-pointer relative overflow-hidden rounded-2xl sm:rounded-3xl border border-amber-500/40 bg-gradient-to-br from-[#ee4d2d]/15 via-[#111827] to-amber-950/30 p-3.5 sm:p-4 shadow-xl shadow-orange-950/30 transition-all hover:border-amber-400 active:scale-[0.99]"
-        >
-          {/* Subtle glowing corner light */}
-          <div className="absolute top-0 right-0 -mt-6 -mr-6 h-24 w-24 rounded-full bg-orange-500/20 blur-xl pointer-events-none" />
-
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-red-600 to-amber-500 px-2.5 py-0.5 text-[10px] font-black text-white shadow-sm">
-              <Zap className="h-3 w-3 fill-yellow-300 text-yellow-300" />
-              <span>{theme.heroCardTag || 'ĐỢT PHÁT MÃ 0H'}</span>
+          {/* Target link subtle badge */}
+          {slide.linkUrl && (
+            <div className="absolute bottom-2 right-2 sm:bottom-2.5 sm:right-2.5 flex items-center gap-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[10px] sm:text-[11px] font-bold text-white opacity-80 group-hover:opacity-100 group-hover:border-orange-400 transition-all pointer-events-none shadow-md">
+              <Zap className="h-3 w-3 fill-amber-400 text-amber-400" />
+              <span>Nhận ưu đãi</span>
+              <ExternalLink className="h-2.5 w-2.5 opacity-80" />
             </div>
-
-            <span className="text-[10.5px] font-semibold text-emerald-400 flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-              Đang hoạt động
-            </span>
-          </div>
-
-          <h2 className="text-base sm:text-lg font-black text-white tracking-tight leading-snug">
-            {theme.heroTitle || 'Siêu Hội Săn Mã Giảm 22%'}
-          </h2>
-
-          <p className="text-xs text-slate-300 mt-0.5 line-clamp-1">
-            {theme.heroSubtitle || 'Tự động kích hoạt mã FB 22%, YouTube 20% khi mở App Shopee.'}
-          </p>
-
-          <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-white/10">
-            <div className="flex items-center gap-1.5 text-[11px] text-amber-300 font-bold">
-              <Gift className="h-3.5 w-3.5 text-amber-400" />
-              <span>Ưu đãi áp dụng trên App Shopee</span>
-            </div>
-
-            <span className="text-[11px] font-black text-orange-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-              <span>Dán link ngay</span>
-              <ArrowRight className="h-3 w-3" />
-            </span>
-          </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // --- 4. MODE: COMPACT TEXT (Standard Default - Sleek & Conversion Focused) ---
-  const highlights = theme.heroHighlights && theme.heroHighlights.length > 0
-    ? theme.heroHighlights
-    : ['Mã FB 22%', 'Mã YouTube 20%', 'Shopee Live & Video', 'Tự động áp mã'];
-
+  // --- 2. MULTI-SLIDE IMAGE CAROUSEL WITH TOUCH SWIPE & AFFILIATE TARGET LINKS ---
   return (
-    <div className="text-center space-y-2 py-1 animate-fadeIn">
-      {/* Top Sparkle Badge */}
-      <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400 shadow-sm">
-        <Sparkles className="h-3.5 w-3.5 text-orange-400" />
-        <span>{theme.bannerBadgeText || 'Tự động kích hoạt mã giảm giá sâu nhất'}</span>
-      </div>
+    <div className="w-full pt-1 pb-1 animate-fadeIn">
+      {seoHeading}
 
-      {/* Main Hero Headline */}
-      <h1 className="text-2xl font-black text-white tracking-tight sm:text-3xl leading-tight">
-        {theme.heroTitle || 'Chuyển Đổi Link Shopee'}
-      </h1>
+      <div
+        className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-black/40 shadow-lg transition-all duration-300 hover:border-orange-500/40 select-none"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Slides Track */}
+        <div className="relative w-full aspect-[2.9/1] sm:aspect-[3.6/1] overflow-hidden">
+          {slides.map((slide, index) => {
+            const isCurrent = index === currentIndex;
+            const desktopImg = slide.desktopImageUrl || slide.mobileImageUrl;
+            const mobileImg = slide.mobileImageUrl || slide.desktopImageUrl;
 
-      {/* Subtitle Description */}
-      <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-        {theme.heroSubtitle || 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.'}
-      </p>
+            return (
+              <div
+                key={slide._key || index}
+                onClick={() => handleSlideClick(slide)}
+                className={`absolute inset-0 cursor-pointer transition-opacity duration-500 ease-in-out ${
+                  isCurrent ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                }`}
+              >
+                <picture className="block w-full h-full">
+                  {desktopImg && <source media="(min-width: 640px)" srcSet={desktopImg} />}
+                  <img
+                    src={mobileImg || desktopImg}
+                    alt={slide.title || `Banner Khuyến Mãi ${index + 1}`}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015]"
+                  />
+                </picture>
 
-      {/* Highlights Pill Tags */}
-      {highlights.length > 0 && (
-        <div className="flex items-center justify-center gap-1.5 flex-wrap pt-0.5">
-          {highlights.map((tag, idx) => (
-            <span
+                {/* Target link subtle badge */}
+                {slide.linkUrl && (
+                  <div className="absolute bottom-2 right-2 sm:bottom-2.5 sm:right-2.5 flex items-center gap-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[10px] sm:text-[11px] font-bold text-white opacity-85 group-hover:opacity-100 group-hover:border-orange-400 transition-all pointer-events-none shadow-md">
+                    <Zap className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <span>Nhận ưu đãi</span>
+                    <ExternalLink className="h-2.5 w-2.5 opacity-80" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop Prev / Next Navigation Arrows (subtle hover buttons) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            prevSlide();
+          }}
+          aria-label="Slide trước"
+          className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black/45 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-90 hover:opacity-100 hover:bg-orange-500 hover:border-orange-400 transition-all active:scale-95 shadow-md"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            nextSlide();
+          }}
+          aria-label="Slide tiếp theo"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black/45 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-90 hover:opacity-100 hover:bg-orange-500 hover:border-orange-400 transition-all active:scale-95 shadow-md"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+
+        {/* Carousel Dots Pagination Indicators */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-xs px-2 py-1 border border-white/10">
+          {slides.map((_, idx) => (
+            <button
               key={idx}
-              className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-0.5 text-[10.5px] font-semibold text-slate-300 shadow-xs hover:border-orange-500/30 hover:text-orange-300 transition-colors"
-            >
-              <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-              <span>{tag}</span>
-            </span>
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToSlide(idx);
+              }}
+              aria-label={`Chuyển đến slide ${idx + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                idx === currentIndex
+                  ? 'w-4 sm:w-5 bg-gradient-to-r from-orange-500 to-amber-400 shadow-sm'
+                  : 'w-1.5 bg-white/40 hover:bg-white/70'
+              }`}
+            />
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

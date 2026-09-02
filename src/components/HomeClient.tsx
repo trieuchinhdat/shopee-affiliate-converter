@@ -102,7 +102,9 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
           <ConvertInput onConvert={handleConvert} isLoading={isLoading} />
 
           {/* Social Proof Real-time Ticker (Controlled by Sanity Theme) */}
-          {theme?.showSocialProofTicker !== false && <SocialProofTicker />}
+          {theme?.showSocialProofTicker !== false && (
+            <SocialProofTicker messages={theme?.socialProofMessages} />
+          )}
 
           {/* Error Alert */}
           {errorMsg && (

@@ -47,6 +47,16 @@ export interface VoucherItem {
   endTime?: string;
 }
 
+export interface BannerSlideItem {
+  _key?: string;
+  title?: string;
+  desktopImageUrl?: string;
+  mobileImageUrl?: string;
+  linkUrl?: string;
+  openInNewTab?: boolean;
+  isActive?: boolean;
+}
+
 export interface ThemeConfig {
   logoType?: 'text' | 'image';
   logoText?: string;
@@ -60,11 +70,17 @@ export interface ThemeConfig {
   gradientEnd?: string;
   backgroundImageUrl?: string;
   backgroundOverlayOpacity?: number;
+  
+  // Slide Banner Settings
+  showHeroBanner?: boolean;
+  bannerAutoSlide?: boolean;
+  bannerAutoSlideInterval?: number;
+  bannerSlides?: BannerSlideItem[];
+
+  // Legacy/Deprecated Hero Banner (kept optional for backwards compatibility)
   bannerBadgeText?: string;
   heroTitle?: string;
   heroSubtitle?: string;
-  // Hero Banner Advanced Settings
-  showHeroBanner?: boolean;
   heroBannerType?: 'compact_text' | 'fomo_ticker' | 'image_banner' | 'interactive_card';
   heroHighlights?: string[];
   heroTickerText?: string;
@@ -74,21 +90,26 @@ export interface ThemeConfig {
   heroBannerAltText?: string;
   bannerClickAction?: 'focus_input' | 'open_link';
   heroBannerLink?: string;
+
+  // Mobile Home Sections & Notice Toggles
   voucherNoticeText?: string;
-  // Mobile Home Sections Toggles
   showSocialProofTicker?: boolean;
+  socialProofMessages?: string[];
   showVouchersTeaser?: boolean;
   showQuickGuide?: boolean;
   zaloGroupUrl?: string;
+
   // Zalo Community Card Settings
   showZaloCard?: boolean;
   zaloCardTitle?: string;
   zaloCardSubtitle?: string;
   zaloCardMembers?: string;
   zaloCardButtonText?: string;
+
   // Floating Chatbox Settings
   showFloatingZalo?: boolean;
   floatingZaloText?: string;
+
   // SEO & Social Sharing Metadata
   metaTitle?: string;
   metaDescription?: string;

@@ -7,11 +7,12 @@ export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const theme = await getThemeConfig();
 
-  const title = theme.metaTitle || `${theme.heroTitle} - ${theme.logoText}${theme.logoHighlightText} Voucher Shopee`;
+  const title =
+    theme.metaTitle ||
+    `${theme.logoText || 'SALE'}${theme.logoHighlightText || 'HUNTER'} - Săn Mã Giảm Giá Shopee Độc Quyền FB 22% & YouTube 20%`;
   const description =
     theme.metaDescription ||
-    theme.heroSubtitle ||
-    'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền.';
+    'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.';
 
   const keywords = theme.metaKeywords
     ? theme.metaKeywords.split(',').map((k) => k.trim()).filter(Boolean)
@@ -49,7 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url: siteUrl,
-      siteName: `${theme.logoText}${theme.logoHighlightText} ${theme.subTitle || 'Shopee Voucher Hunter'}`,
+      siteName: `${theme.logoText || 'SALE'}${theme.logoHighlightText || 'HUNTER'} ${theme.subTitle || 'Sale Hunter Shopee'}`,
       images: ogImages,
       locale: 'vi_VN',
       type: 'website',
@@ -78,11 +79,12 @@ export default async function HomePage() {
   const theme = await getThemeConfig();
 
   const siteUrl = theme.canonicalUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://sanmakhuyenmai.vn';
-  const appTitle = theme.metaTitle || `${theme.heroTitle} - ${theme.logoText}${theme.logoHighlightText} Voucher Shopee`;
+  const appTitle =
+    theme.metaTitle ||
+    `${theme.logoText || 'SALE'}${theme.logoHighlightText || 'HUNTER'} - Săn Mã Giảm Giá Shopee Độc Quyền FB 22% & YouTube 20%`;
   const appDesc =
     theme.metaDescription ||
-    theme.heroSubtitle ||
-    'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền.';
+    'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.';
 
   // Schema.org Structured Data (JSON-LD)
   const jsonLd = {

@@ -1,6 +1,6 @@
 import { sanityClient } from '@/sanity/client';
 import { urlForImage, urlForOgImage } from '@/sanity/image';
-import { AppConfig, VoucherItem, ThemeConfig } from './types';
+import { AppConfig, VoucherItem, ThemeConfig, BannerSlideItem } from './types';
 
 interface CacheItem<T> {
   data: T;
@@ -229,23 +229,28 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
           gradientEnd,
           backgroundImage,
           backgroundOverlayOpacity,
-          // Hero Banner Fields
+          // Slide Banner Fields
           showHeroBanner,
-          heroBannerType,
-          bannerBadgeText,
-          heroTitle,
-          heroSubtitle,
-          heroHighlights,
-          heroTickerText,
-          heroCardTag,
+          bannerAutoSlide,
+          bannerAutoSlideInterval,
+          bannerSlides[]{
+            _key,
+            title,
+            desktopImage,
+            mobileImage,
+            linkUrl,
+            openInNewTab,
+            isActive
+          },
+          // Legacy Banner Fields for backwards compatibility
           heroBannerDesktopImage,
           heroBannerMobileImage,
           heroBannerAltText,
-          bannerClickAction,
           heroBannerLink,
+          // Mobile Home Sections & Notice Toggles
           voucherNoticeText,
-          // Mobile Home Sections Toggles
           showSocialProofTicker,
+          socialProofMessages,
           showVouchersTeaser,
           showQuickGuide,
           // Zalo & Social Fields
@@ -266,10 +271,54 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       getAppConfigCached(ttl),
     ]);
 
-    const heroTitle = rawTheme?.heroTitle || 'Chuyển Đổi Link Shopee';
-    const heroSubtitle = rawTheme?.heroSubtitle || 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.';
     const logoText = rawTheme?.logoText || 'SALE';
-    const logoHighlightText = rawTheme?.logoHighlightText || 'SỐC';
+    const logoHighlightText = rawTheme?.logoHighlightText || 'HUNTER';
+
+    // Parse and normalize banner slides
+    const parsedSlides: BannerSlideItem[] = Array.isArray(rawTheme?.bannerSlides)
+      ? rawTheme.bannerSlides
+          .filter((s: any) => s && s.isActive !== false)
+          .map((s: any) => ({
+            _key: s._key,
+            title: s.title || 'Banner Khuyến Mãi Shopee',
+            desktopImageUrl: s.desktopImage ? urlForImage(s.desktopImage) : undefined,
+            mobileImageUrl: s.mobileImage
+              ? urlForImage(s.mobileImage)
+              : (s.desktopImage ? urlForImage(s.desktopImage) : undefined),
+            linkUrl: s.linkUrl || undefined,
+            openInNewTab: s.openInNewTab !== false,
+            isActive: s.isActive !== false,
+          }))
+          .filter((s: BannerSlideItem) => Boolean(s.desktopImageUrl || s.mobileImageUrl))
+      : [];
+
+    // Fallback to legacy single banner if slides are not configured yet
+    if (parsedSlides.length === 0 && rawTheme?.heroBannerDesktopImage) {
+      const legacyDesktop = urlForImage(rawTheme.heroBannerDesktopImage);
+      const legacyMobile = rawTheme.heroBannerMobileImage ? urlForImage(rawTheme.heroBannerMobileImage) : legacyDesktop;
+      if (legacyDesktop) {
+        parsedSlides.push({
+          _key: 'legacy-banner-slide',
+          title: rawTheme.heroBannerAltText || 'Banner Siêu Sale Shopee',
+          desktopImageUrl: legacyDesktop,
+          mobileImageUrl: legacyMobile,
+          linkUrl: rawTheme.heroBannerLink || undefined,
+          openInNewTab: true,
+          isActive: true,
+        });
+      }
+    }
+
+    const defaultMetaTitle = 'Sale Hunter - Săn Mã Shopee & Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%';
+    const defaultMetaDesc = 'Sale Hunter - Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.';
+
+    const defaultSocialMessages = [
+      'Khách HN vừa nhận mã FB 22% (-65k)',
+      'Khách HCM vừa áp mã YT 20% (-150k)',
+      'Khách ĐN vừa nhận mã FB 25% (-120k)',
+      '1.450+ lượt lấy mã thành công hôm nay',
+      'Mã Shopee Live & Video vừa áp (-70k)',
+    ];
 
     const result: ThemeConfig = {
       logoType: rawTheme?.logoType || 'text',
@@ -277,32 +326,24 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       logoHighlightText,
       logoBadge: rawTheme?.logoBadge || 'VIP',
       logoImageUrl: rawTheme?.logoImage ? urlForImage(rawTheme.logoImage) : undefined,
-      subTitle: rawTheme?.subTitle || 'Voucher Hunter Shopee',
+      subTitle: rawTheme?.subTitle || 'Sale Hunter Shopee',
       backgroundType: rawTheme?.backgroundType || 'gradient',
       backgroundColor: rawTheme?.backgroundColor || '#0b0f19',
       gradientStart: rawTheme?.gradientStart || '#0b0f19',
       gradientEnd: rawTheme?.gradientEnd || '#1c1008',
       backgroundImageUrl: rawTheme?.backgroundImage ? urlForImage(rawTheme.backgroundImage) : undefined,
       backgroundOverlayOpacity: typeof rawTheme?.backgroundOverlayOpacity === 'number' ? rawTheme.backgroundOverlayOpacity : 85,
-      // Hero Banner Mapped Fields
+      // Slide Banner Mapped Fields
       showHeroBanner: rawTheme?.showHeroBanner !== false,
-      heroBannerType: rawTheme?.heroBannerType || 'compact_text',
-      bannerBadgeText: rawTheme?.bannerBadgeText || 'Tự động kích hoạt mã giảm giá sâu nhất',
-      heroTitle,
-      heroSubtitle,
-      heroHighlights: Array.isArray(rawTheme?.heroHighlights) && rawTheme.heroHighlights.length > 0
-        ? rawTheme.heroHighlights
-        : ['Mã FB 22%', 'Mã YouTube 20%', 'Shopee Live & Video', 'Tự động áp mã'],
-      heroTickerText: rawTheme?.heroTickerText || '🔥 Đang phát mã giảm giá FB 22% (tối đa 300k) & YouTube 20% độc quyền - Tự động áp khi dán link!',
-      heroCardTag: rawTheme?.heroCardTag || 'ĐỢT PHÁT MÃ 0H',
-      heroBannerDesktopImageUrl: rawTheme?.heroBannerDesktopImage ? urlForImage(rawTheme.heroBannerDesktopImage) : undefined,
-      heroBannerMobileImageUrl: rawTheme?.heroBannerMobileImage ? urlForImage(rawTheme.heroBannerMobileImage) : undefined,
-      heroBannerAltText: rawTheme?.heroBannerAltText || 'Săn mã giảm giá Shopee độc quyền 22%',
-      bannerClickAction: rawTheme?.bannerClickAction || 'focus_input',
-      heroBannerLink: rawTheme?.heroBannerLink || undefined,
+      bannerAutoSlide: rawTheme?.bannerAutoSlide !== false,
+      bannerAutoSlideInterval: typeof rawTheme?.bannerAutoSlideInterval === 'number' && rawTheme.bannerAutoSlideInterval >= 2 ? rawTheme.bannerAutoSlideInterval : 5,
+      bannerSlides: parsedSlides,
       voucherNoticeText: rawTheme?.voucherNoticeText || 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
       // Mobile Home Sections Toggles
       showSocialProofTicker: rawTheme?.showSocialProofTicker !== false,
+      socialProofMessages: Array.isArray(rawTheme?.socialProofMessages) && rawTheme.socialProofMessages.filter(Boolean).length > 0
+        ? rawTheme.socialProofMessages.filter(Boolean)
+        : defaultSocialMessages,
       showVouchersTeaser: rawTheme?.showVouchersTeaser !== false,
       showQuickGuide: rawTheme?.showQuickGuide !== false,
       // Zalo Card & Floating
@@ -314,8 +355,8 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       zaloCardButtonText: rawTheme?.zaloCardButtonText || 'Vào Nhóm Zalo Săn Sale (Miễn Phí)',
       showFloatingZalo: rawTheme?.showFloatingZalo !== false,
       floatingZaloText: rawTheme?.floatingZaloText || 'Nhận mã 22% & mã Live sớm nhất! 💬',
-      metaTitle: rawTheme?.metaTitle || `${heroTitle} - ${logoText}${logoHighlightText} Voucher Shopee`,
-      metaDescription: rawTheme?.metaDescription || heroSubtitle,
+      metaTitle: rawTheme?.metaTitle || defaultMetaTitle,
+      metaDescription: rawTheme?.metaDescription || defaultMetaDesc,
       metaKeywords: rawTheme?.metaKeywords || 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
       ogImageUrl: rawTheme?.ogImage ? urlForOgImage(rawTheme.ogImage) : rawTheme?.backgroundImage ? urlForOgImage(rawTheme.backgroundImage) : undefined,
       canonicalUrl: rawTheme?.canonicalUrl || process.env.NEXT_PUBLIC_SITE_URL || undefined,
@@ -329,24 +370,26 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
   const fallbackTheme: ThemeConfig = {
     logoType: 'text',
     logoText: 'SALE',
-    logoHighlightText: 'SỐC',
+    logoHighlightText: 'HUNTER',
     logoBadge: 'PRO',
-    subTitle: 'Voucher Hunter Shopee',
+    subTitle: 'Sale Hunter Shopee',
     backgroundType: 'gradient',
     backgroundColor: '#0b0f19',
     gradientStart: '#0b0f19',
     gradientEnd: '#1c1008',
     showHeroBanner: true,
-    heroBannerType: 'compact_text',
-    bannerBadgeText: 'Tự động kích hoạt mã giảm giá sâu nhất',
-    heroTitle: 'Chuyển Đổi Link Shopee',
-    heroSubtitle: 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.',
-    heroHighlights: ['Mã FB 22%', 'Mã YouTube 20%', 'Shopee Live & Video', 'Tự động áp mã'],
-    heroTickerText: '🔥 Đang phát mã giảm giá FB 22% (tối đa 300k) & YouTube 20% độc quyền - Tự động áp khi dán link!',
-    heroCardTag: 'ĐỢT PHÁT MÃ 0H',
-    bannerClickAction: 'focus_input',
+    bannerAutoSlide: true,
+    bannerAutoSlideInterval: 5,
+    bannerSlides: [],
     voucherNoticeText: 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
     showSocialProofTicker: true,
+    socialProofMessages: [
+      'Khách HN vừa nhận mã FB 22% (-65k)',
+      'Khách HCM vừa áp mã YT 20% (-150k)',
+      'Khách ĐN vừa nhận mã FB 25% (-120k)',
+      '1.450+ lượt lấy mã thành công hôm nay',
+      'Mã Shopee Live & Video vừa áp (-70k)',
+    ],
     showVouchersTeaser: true,
     showQuickGuide: true,
     zaloGroupUrl: 'https://zalo.me/g/kczvyi443',
@@ -357,8 +400,8 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
     zaloCardButtonText: 'Vào Nhóm Zalo Săn Sale (Miễn Phí)',
     showFloatingZalo: true,
     floatingZaloText: 'Nhận mã 22% & mã Live sớm nhất! 💬',
-    metaTitle: 'Săn Mã Shopee - Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%',
-    metaDescription: 'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.',
+    metaTitle: 'Sale Hunter - Săn Mã Shopee & Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%',
+    metaDescription: 'Sale Hunter - Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.',
     metaKeywords: 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
     canonicalUrl: process.env.NEXT_PUBLIC_SITE_URL || undefined,
   };

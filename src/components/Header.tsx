@@ -16,9 +16,9 @@ export default function Header({ theme }: HeaderProps) {
 
   const logoType = theme?.logoType || 'text';
   const logoText = theme?.logoText || 'SALE';
-  const logoHighlight = theme?.logoHighlightText || 'SỐC';
+  const logoHighlight = theme?.logoHighlightText || 'HUNTER';
   const logoBadge = theme?.logoBadge || 'VIP';
-  const subTitle = theme?.subTitle || 'Voucher Hunter Shopee';
+  const subTitle = theme?.subTitle || 'Sale Hunter Shopee';
   const logoImg = theme?.logoImageUrl;
 
   const hasImageLogo = logoType === 'image' && Boolean(logoImg);

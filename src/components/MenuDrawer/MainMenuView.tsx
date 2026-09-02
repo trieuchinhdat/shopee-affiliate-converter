@@ -54,7 +54,7 @@ export default function MainMenuView({
             <Zap className="h-3.5 w-3.5" />
           </div>
           <span className="font-black text-xs text-white tracking-tight">
-            {theme?.logoText || 'SALE'}<span className="text-orange-400">{theme?.logoHighlightText || 'SỐC'}</span> SHOPEE
+            {theme?.logoText || 'SALE'}<span className="text-orange-400">{theme?.logoHighlightText || 'HUNTER'}</span> SHOPEE
           </span>
         </div>
         <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold text-orange-400 border border-orange-500/20">

@@ -12,7 +12,11 @@ export const themeConfig = defineType({
     },
     {
       name: 'banner',
-      title: '📢 Banner & Tiêu Đề',
+      title: '🖼️ Slide Banner Quảng Cáo',
+    },
+    {
+      name: 'home_sections',
+      title: '⚡ Tiện Ích Trang Chủ & Lưu Ý',
     },
     {
       name: 'zalo_widget',
@@ -52,7 +56,7 @@ export const themeConfig = defineType({
       title: 'Chữ nổi bật (Màu cam)',
       type: 'string',
       group: 'branding',
-      initialValue: 'SỐC',
+      initialValue: 'HUNTER',
       hidden: ({ parent }) => parent?.logoType === 'image',
     }),
     defineField({
@@ -78,7 +82,7 @@ export const themeConfig = defineType({
       title: 'Slogan / Dòng chữ dưới logo',
       type: 'string',
       group: 'branding',
-      initialValue: 'Voucher Hunter Shopee',
+      initialValue: 'Sale Hunter Shopee',
     }),
 
     // --- 2. MÀU NỀN HOẶC HÌNH NỀN (BACKGROUND) ---
@@ -143,163 +147,153 @@ export const themeConfig = defineType({
       hidden: ({ parent }) => parent?.backgroundType !== 'image',
     }),
 
-    // --- 3. NỘI DUNG & CÀI ĐẶT HERO BANNER ---
+    // --- 3. CÀI ĐẶT SLIDE BANNER HÌNH ẢNH (CAROUSEL & AFFILIATE LINK) ---
     defineField({
       name: 'showHeroBanner',
-      title: 'Bật hiển thị Khối Hero Banner',
-      description: 'Bật / Tắt toàn bộ khối banner trên ô nhập link',
+      title: 'Bật hiển thị Khối Slide Banner',
+      description: 'Bật / Tắt toàn bộ khối banner quảng cáo trên trang chủ',
       type: 'boolean',
       group: 'banner',
       initialValue: true,
     }),
     defineField({
-      name: 'heroBannerType',
-      title: 'Kiểu hiển thị Hero Banner',
-      description: 'Lựa chọn phong cách banner phù hợp với ngày thường hoặc đợt Mega Sale',
-      type: 'string',
+      name: 'bannerAutoSlide',
+      title: 'Tự động chuyển Slide (Auto Play)',
+      description: 'Tự động chạy slide tiếp theo sau khoảng thời gian cài đặt',
+      type: 'boolean',
       group: 'banner',
-      options: {
-        list: [
-          { title: '✨ Tiêu chuẩn Tinh Gọn (Tiêu đề + Badge + Tags)', value: 'compact_text' },
-          { title: '🔥 Dải tin khẩn / Ticker (Thông báo mã gấp)', value: 'fomo_ticker' },
-          { title: '🖼️ Hình ảnh Banner Đồ Họa (Desktop & Mobile riêng)', value: 'image_banner' },
-          { title: '⚡ Thẻ Chiến Dịch Mega Sale (Card nổi bật phát sáng)', value: 'interactive_card' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'compact_text',
+      initialValue: true,
       hidden: ({ parent }) => parent?.showHeroBanner === false,
     }),
     defineField({
-      name: 'bannerBadgeText',
-      title: 'Dòng chữ huy hiệu đầu trang (Badge)',
-      type: 'string',
+      name: 'bannerAutoSlideInterval',
+      title: 'Thời gian chuyển Slide (Giây)',
+      description: 'Khuyến nghị: 4 - 5 giây để người dùng kịp quan sát và click',
+      type: 'number',
       group: 'banner',
-      initialValue: 'Tự động kích hoạt mã giảm giá sâu nhất',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType === 'image_banner',
+      initialValue: 5,
+      validation: (Rule) => Rule.min(2).max(20).warning('Thời gian nên từ 2 đến 20 giây'),
+      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.bannerAutoSlide === false,
     }),
     defineField({
-      name: 'heroTitle',
-      title: 'Tiêu đề chính (Hero Title)',
-      type: 'string',
-      group: 'banner',
-      initialValue: 'Chuyển Đổi Link Shopee',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType === 'image_banner' || parent?.heroBannerType === 'fomo_ticker',
-    }),
-    defineField({
-      name: 'heroSubtitle',
-      title: 'Mô tả phụ dưới tiêu đề',
-      type: 'text',
-      group: 'banner',
-      rows: 2,
-      initialValue: 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType === 'image_banner' || parent?.heroBannerType === 'fomo_ticker',
-    }),
-    defineField({
-      name: 'heroHighlights',
-      title: 'Danh sách thẻ lợi ích nổi bật (Tags)',
-      description: 'Các thẻ nhỏ bên dưới mô tả (Ví dụ: Mã FB 22%, Mã YouTube 20%, Shopee Live, Tự động áp mã)',
+      name: 'bannerSlides',
+      title: 'Danh sách Slide Banner (Kèm Link Nhận Hoa Hồng)',
+      description: 'Thêm và kéo thả sắp xếp các slide banner quảng cáo. Bấm vào banner sẽ mở link Affiliate/Chiến dịch.',
       type: 'array',
       group: 'banner',
-      of: [{ type: 'string' }],
-      initialValue: ['Mã FB 22%', 'Mã YouTube 20%', 'Shopee Live & Video', 'Tự động áp mã'],
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'compact_text',
+      hidden: ({ parent }) => parent?.showHeroBanner === false,
+      of: [
+        {
+          type: 'object',
+          name: 'bannerSlide',
+          title: 'Slide Banner',
+          fields: [
+            defineField({
+              name: 'title',
+              title: 'Tên / Tiêu đề Slide (Quản lý & SEO Alt Text)',
+              description: 'Ví dụ: Săn Siêu Sale Shopee 9.9 - Giảm 50%',
+              type: 'string',
+              validation: (Rule) => Rule.required().error('Vui lòng nhập tên/tiêu đề gợi nhớ cho slide'),
+            }),
+            defineField({
+              name: 'desktopImage',
+              title: '🖼️ Ảnh Banner cho Máy Tính (Desktop)',
+              description: 'Tỉ lệ chuẩn ngang 3.5:1 hoặc 4:1 (VD: 1200x320px hoặc 1000x280px). Bắt buộc.',
+              type: 'image',
+              options: {
+                hotspot: true,
+              },
+              validation: (Rule) => Rule.required().error('Vui lòng tải ảnh banner Desktop'),
+            }),
+            defineField({
+              name: 'mobileImage',
+              title: '📱 Ảnh Banner cho Điện Thoại (Mobile)',
+              description: 'Tỉ lệ chuẩn ngang 2.8:1 hoặc 3:1 (VD: 750x260px hoặc 600x210px). Nếu để trống sẽ tự lấy ảnh Desktop.',
+              type: 'image',
+              options: {
+                hotspot: true,
+              },
+            }),
+            defineField({
+              name: 'linkUrl',
+              title: '🔗 Đường dẫn liên kết (Target Link Điều Hướng)',
+              description: 'Link Affiliate Shopee, Link Mega Sale, hoặc Link Nhóm Zalo để nhận hoa hồng gián tiếp.',
+              type: 'url',
+            }),
+            defineField({
+              name: 'openInNewTab',
+              title: 'Mở liên kết trong tab mới',
+              description: 'Nên bật để giữ nguyên tab dán link của người dùng',
+              type: 'boolean',
+              initialValue: true,
+            }),
+            defineField({
+              name: 'isActive',
+              title: 'Kích hoạt slide này',
+              type: 'boolean',
+              initialValue: true,
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              linkUrl: 'linkUrl',
+              media: 'desktopImage',
+              isActive: 'isActive',
+            },
+            prepare({ title, linkUrl, media, isActive }) {
+              const statusText = isActive === false ? '⛔ Đang tắt' : '🟢 Đang hoạt động';
+              return {
+                title: `${title || 'Chưa đặt tên'} (${statusText})`,
+                subtitle: linkUrl ? `🔗 ${linkUrl}` : '⚠️ Chưa gắn link điều hướng',
+                media,
+              };
+            },
+          },
+        },
+      ],
     }),
-    defineField({
-      name: 'heroTickerText',
-      title: 'Nội dung Dải tin khẩn (Ticker / Breaking News)',
-      description: 'Dòng thông báo khẩn cấp dạng ticker chạy hoặc nhấp nháy tạo độ khan hiếm',
-      type: 'string',
-      group: 'banner',
-      initialValue: '🔥 Đang phát mã giảm giá FB 22% (tối đa 300k) & YouTube 20% độc quyền - Tự động áp khi dán link!',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'fomo_ticker',
-    }),
-    defineField({
-      name: 'heroCardTag',
-      title: 'Nhãn góc Thẻ Chiến Dịch',
-      type: 'string',
-      group: 'banner',
-      initialValue: 'ĐỢT PHÁT MÃ 0H',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'interactive_card',
-    }),
-    defineField({
-      name: 'heroBannerDesktopImage',
-      title: '🖼️ Ảnh Banner cho Máy Tính (Desktop)',
-      description: 'Tỉ lệ chuẩn ngang 4:1 hoặc 3.5:1 (VD: 1200x300px hoặc 1000x280px). Hiển thị trên PC / Laptop.',
-      type: 'image',
-      group: 'banner',
-      options: {
-        hotspot: true,
-      },
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'image_banner',
-    }),
-    defineField({
-      name: 'heroBannerMobileImage',
-      title: '📱 Ảnh Banner cho Điện Thoại (Mobile)',
-      description: 'Tỉ lệ chuẩn ngang 3:1 hoặc 2.8:1 (VD: 750x250px hoặc 600x210px). Hiển thị trên Smartphone/Tablet. Nếu để trống sẽ tự lấy ảnh Desktop.',
-      type: 'image',
-      group: 'banner',
-      options: {
-        hotspot: true,
-      },
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'image_banner',
-    }),
-    defineField({
-      name: 'heroBannerAltText',
-      title: 'Mô tả ảnh banner (Alt Text - SEO)',
-      type: 'string',
-      group: 'banner',
-      initialValue: 'Săn mã giảm giá Shopee độc quyền 22%',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'image_banner',
-    }),
-    defineField({
-      name: 'bannerClickAction',
-      title: 'Hành vi khi người dùng click vào Banner',
-      type: 'string',
-      group: 'banner',
-      options: {
-        list: [
-          { title: '🎯 Tự động Focus vào ô Dán Link (Khuyên dùng)', value: 'focus_input' },
-          { title: '🔗 Mở đường link tùy chỉnh (Zalo / Sự kiện Shopee)', value: 'open_link' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'focus_input',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType === 'compact_text',
-    }),
-    defineField({
-      name: 'heroBannerLink',
-      title: 'Đường link đích (Nếu chọn Mở đường link)',
-      description: 'Đường dẫn mở tab mới khi click vào banner. Ví dụ: Link Nhóm Zalo hoặc Trang sự kiện Shopee',
-      type: 'url',
-      group: 'banner',
-      hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.bannerClickAction !== 'open_link' || parent?.heroBannerType === 'compact_text',
-    }),
+
+    // --- 4. CÁC TIỆN ÍCH TRÊN TRANG CHỦ & LƯU Ý VOUCHER ---
     defineField({
       name: 'voucherNoticeText',
       title: '⚠️ Đoạn Lưu ý cố định dưới danh sách Voucher',
       description: 'Nội dung hướng dẫn / xử lý sự cố hiển thị trong khung viền vàng nổi bật dưới các nút voucher',
       type: 'text',
-      group: 'banner',
+      group: 'home_sections',
       rows: 2,
       initialValue: 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
     }),
-
-    // --- CÁC KHỐI TINH GỌN TRÊN MOBILE (KHI CHƯA DÁN LINK) ---
     defineField({
       name: 'showSocialProofTicker',
       title: '🟢 Bật Dải tin Ticker (Khách vừa nhận mã)',
       description: 'Dải thông báo nhỏ nhấp nháy đèn xanh chạy dưới nút Dán & Lấy Mã',
       type: 'boolean',
-      group: 'banner',
+      group: 'home_sections',
       initialValue: true,
+    }),
+    defineField({
+      name: 'socialProofMessages',
+      title: '📝 Danh sách thông báo Ticker (Khách vừa nhận mã)',
+      description: 'Nhập các dòng thông báo thay phiên nhau chạy. Bấm "Add item" để thêm dòng mới, kéo thả để đổi thứ tự.',
+      type: 'array',
+      group: 'home_sections',
+      of: [{ type: 'string' }],
+      initialValue: [
+        'Khách HN vừa nhận mã FB 22% (-65k)',
+        'Khách HCM vừa áp mã YT 20% (-150k)',
+        'Khách ĐN vừa nhận mã FB 25% (-120k)',
+        '1.450+ lượt lấy mã thành công hôm nay',
+        'Mã Shopee Live & Video vừa áp (-70k)',
+      ],
+      hidden: ({ parent }) => parent?.showSocialProofTicker === false,
     }),
     defineField({
       name: 'showVouchersTeaser',
       title: '🔥 Bật Bảng Mã Hot Đang Phát (Trang chủ)',
       description: 'Thẻ hiển thị các mã hot (FB 22%, YouTube 20%...) khi người dùng chưa dán link',
       type: 'boolean',
-      group: 'banner',
+      group: 'home_sections',
       initialValue: true,
     }),
     defineField({
@@ -307,11 +301,11 @@ export const themeConfig = defineType({
       title: '⚡ Bật Thanh 3 Bước Săn Mã Nhanh (1 dòng)',
       description: 'Thanh hướng dẫn tinh gọn: 1. Copy link ➔ 2. Bấm Dán ➔ 3. Nhận mã',
       type: 'boolean',
-      group: 'banner',
+      group: 'home_sections',
       initialValue: true,
     }),
 
-    // --- 4. CÀI ĐẶT THẺ NHÓM ZALO TRÊN TRANG CHỦ ---
+    // --- 5. CÀI ĐẶT THẺ NHÓM ZALO TRÊN TRANG CHỦ ---
     defineField({
       name: 'showZaloCard',
       title: 'Hiển thị Thẻ Nhóm Zalo Báo Mã Săn Sale',
@@ -353,7 +347,7 @@ export const themeConfig = defineType({
       hidden: ({ parent }) => parent?.showZaloCard === false,
     }),
 
-    // --- 5. CÀI ĐẶT CHATBOX ZALO NỔI Ở GÓC MÀN HÌNH ---
+    // --- 6. CÀI ĐẶT CHATBOX ZALO NỔI Ở GÓC MÀN HÌNH ---
     defineField({
       name: 'showFloatingZalo',
       title: 'Bật Chatbox Zalo nổi ở góc màn hình (Floating Widget)',
@@ -371,22 +365,24 @@ export const themeConfig = defineType({
       hidden: ({ parent }) => parent?.showFloatingZalo === false,
     }),
 
-    // --- 6. CÀI ĐẶT SEO & CHIA SẺ MẠNG XÃ HỘI (METADATA) ---
+    // --- 7. CÀI ĐẶT SEO & CHIA SẺ MẠNG XÃ HỘI (METADATA) ---
     defineField({
       name: 'metaTitle',
       title: 'Tiêu đề SEO (Meta Title)',
-      description: 'Tiêu đề hiển thị trên Google và tab trình duyệt (Để trống sẽ tự động lấy Tiêu đề chính)',
+      description: 'Tiêu đề hiển thị trên Google và tab trình duyệt (Khuyên dùng: 50-70 ký tự)',
       type: 'string',
       group: 'seo',
+      initialValue: 'Sale Hunter - Săn Mã Shopee & Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%',
       validation: (Rule) => Rule.max(70).warning('Nên dưới 70 ký tự để hiển thị tốt nhất trên Google'),
     }),
     defineField({
       name: 'metaDescription',
       title: 'Mô tả SEO (Meta Description)',
-      description: 'Mô tả ngắn gọn hiển thị trên kết quả tìm kiếm Google (Để trống sẽ tự động lấy Mô tả phụ)',
+      description: 'Mô tả ngắn gọn hiển thị trên kết quả tìm kiếm Google (Khuyên dùng: 120-160 ký tự)',
       type: 'text',
       group: 'seo',
       rows: 3,
+      initialValue: 'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.',
       validation: (Rule) => Rule.max(160).warning('Nên dưới 160 ký tự để tránh bị Google cắt bớt'),
     }),
     defineField({
@@ -417,13 +413,16 @@ export const themeConfig = defineType({
   ],
   preview: {
     select: {
-      title: 'heroTitle',
+      title: 'metaTitle',
+      logoText: 'logoText',
+      logoHighlightText: 'logoHighlightText',
       subtitle: 'subTitle',
     },
-    prepare({ title, subtitle }) {
+    prepare({ title, logoText, logoHighlightText, subtitle }) {
+      const brand = `${logoText || ''}${logoHighlightText || ''}`.trim() || 'Theme Settings';
       return {
-        title: `Cài đặt giao diện: ${title || 'Chưa đặt tiêu đề'}`,
-        subtitle: subtitle || 'Theme Settings',
+        title: `Cài đặt giao diện: ${brand}`,
+        subtitle: title || subtitle || 'Theme Settings',
       };
     },
   },

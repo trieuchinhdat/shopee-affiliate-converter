@@ -56,7 +56,7 @@ export default function FaqPage() {
               <Zap className="h-4 w-4" />
             </div>
             <span className="font-black text-sm text-white">
-              SALE<span className="text-orange-400">SỐC</span>
+              SALE<span className="text-orange-400">HUNTER</span>
             </span>
           </div>
         </div>

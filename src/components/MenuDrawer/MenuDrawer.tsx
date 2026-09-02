@@ -137,7 +137,7 @@ export default function MenuDrawer({ isOpen, onClose, theme }: MenuDrawerProps) 
                 </div>
                 <div>
                   <h2 className="text-sm font-black tracking-tight text-white">
-                    {theme?.logoText || 'SALE'}<span className="text-orange-400">{theme?.logoHighlightText || 'SỐC'}</span>
+                    {theme?.logoText || 'SALE'}<span className="text-orange-400">{theme?.logoHighlightText || 'HUNTER'}</span>
                   </h2>
                   <p className="text-[10px] text-slate-400">Menu Tiện Ích Săn Mã</p>
                 </div>

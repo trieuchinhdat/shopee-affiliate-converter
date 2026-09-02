@@ -36,7 +36,7 @@ export async function GET(_req: NextRequest) {
     const themeConfigQuery = `*[_type == "themeConfig"][0]{
       logoText,
       logoHighlightText,
-      heroTitle,
+      metaTitle,
       backgroundType,
       _updatedAt
     }`;
