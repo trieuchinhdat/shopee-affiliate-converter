@@ -39,9 +39,8 @@ export async function POST(req: NextRequest) {
       );
 
       if (activeUrls.length > 0) {
-        // Shuffle active URLs to rotate tokens, and pick the first one that resolves successfully
-        const shuffled = [...activeUrls].sort(() => Math.random() - 0.5);
-        for (const item of shuffled) {
+        // Try active URLs in order (top item first), pick the first one that resolves successfully
+        for (const item of activeUrls) {
           try {
             const parsed = await resolveAndExtractFacebookPayload(item.url);
             if (parsed) {
