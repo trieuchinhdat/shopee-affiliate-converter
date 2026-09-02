@@ -75,6 +75,10 @@ export interface ThemeConfig {
   bannerClickAction?: 'focus_input' | 'open_link';
   heroBannerLink?: string;
   voucherNoticeText?: string;
+  // Mobile Home Sections Toggles
+  showSocialProofTicker?: boolean;
+  showVouchersTeaser?: boolean;
+  showQuickGuide?: boolean;
   zaloGroupUrl?: string;
   // Zalo Community Card Settings
   showZaloCard?: boolean;

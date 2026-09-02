@@ -101,8 +101,8 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
           {/* Input Form */}
           <ConvertInput onConvert={handleConvert} isLoading={isLoading} />
 
-          {/* Social Proof Real-time Ticker */}
-          <SocialProofTicker />
+          {/* Social Proof Real-time Ticker (Controlled by Sanity Theme) */}
+          {theme?.showSocialProofTicker !== false && <SocialProofTicker />}
 
           {/* Error Alert */}
           {errorMsg && (
@@ -111,11 +111,11 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
             </div>
           )}
 
-          {/* When NO result yet: Render High-Converting Teaser & Quick Guide */}
+          {/* When NO result yet: Render High-Converting Teaser & Quick Guide (Controlled by Sanity Theme) */}
           {!result && (
             <div className="space-y-2.5 pt-0.5 animate-fadeIn">
-              <HomeVouchersTeaser />
-              <QuickGuideSteps />
+              {theme?.showVouchersTeaser !== false && <HomeVouchersTeaser />}
+              {theme?.showQuickGuide !== false && <QuickGuideSteps />}
             </div>
           )}
 

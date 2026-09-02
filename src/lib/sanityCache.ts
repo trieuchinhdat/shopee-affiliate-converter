@@ -244,6 +244,10 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
           bannerClickAction,
           heroBannerLink,
           voucherNoticeText,
+          // Mobile Home Sections Toggles
+          showSocialProofTicker,
+          showVouchersTeaser,
+          showQuickGuide,
           // Zalo & Social Fields
           showZaloCard,
           zaloCardTitle,
@@ -297,6 +301,10 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       bannerClickAction: rawTheme?.bannerClickAction || 'focus_input',
       heroBannerLink: rawTheme?.heroBannerLink || undefined,
       voucherNoticeText: rawTheme?.voucherNoticeText || 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
+      // Mobile Home Sections Toggles
+      showSocialProofTicker: rawTheme?.showSocialProofTicker !== false,
+      showVouchersTeaser: rawTheme?.showVouchersTeaser !== false,
+      showQuickGuide: rawTheme?.showQuickGuide !== false,
       // Zalo Card & Floating
       zaloGroupUrl: rawAppConfig?.zaloGroupUrl || 'https://zalo.me/g/kczvyi443',
       showZaloCard: rawTheme?.showZaloCard !== false,
@@ -338,6 +346,9 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
     heroCardTag: 'ĐỢT PHÁT MÃ 0H',
     bannerClickAction: 'focus_input',
     voucherNoticeText: 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
+    showSocialProofTicker: true,
+    showVouchersTeaser: true,
+    showQuickGuide: true,
     zaloGroupUrl: 'https://zalo.me/g/kczvyi443',
     showZaloCard: true,
     zaloCardTitle: 'Nhóm Zalo Báo Mã Săn Sale',

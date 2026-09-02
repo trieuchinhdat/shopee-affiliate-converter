@@ -285,6 +285,32 @@ export const themeConfig = defineType({
       initialValue: 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
     }),
 
+    // --- CÁC KHỐI TINH GỌN TRÊN MOBILE (KHI CHƯA DÁN LINK) ---
+    defineField({
+      name: 'showSocialProofTicker',
+      title: '🟢 Bật Dải tin Ticker (Khách vừa nhận mã)',
+      description: 'Dải thông báo nhỏ nhấp nháy đèn xanh chạy dưới nút Dán & Lấy Mã',
+      type: 'boolean',
+      group: 'banner',
+      initialValue: true,
+    }),
+    defineField({
+      name: 'showVouchersTeaser',
+      title: '🔥 Bật Bảng Mã Hot Đang Phát (Trang chủ)',
+      description: 'Thẻ hiển thị các mã hot (FB 22%, YouTube 20%...) khi người dùng chưa dán link',
+      type: 'boolean',
+      group: 'banner',
+      initialValue: true,
+    }),
+    defineField({
+      name: 'showQuickGuide',
+      title: '⚡ Bật Thanh 3 Bước Săn Mã Nhanh (1 dòng)',
+      description: 'Thanh hướng dẫn tinh gọn: 1. Copy link ➔ 2. Bấm Dán ➔ 3. Nhận mã',
+      type: 'boolean',
+      group: 'banner',
+      initialValue: true,
+    }),
+
     // --- 4. CÀI ĐẶT THẺ NHÓM ZALO TRÊN TRANG CHỦ ---
     defineField({
       name: 'showZaloCard',
