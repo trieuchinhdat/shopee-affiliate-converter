@@ -4,12 +4,32 @@ export const appConfig = defineType({
   name: 'appConfig',
   title: 'Cài đặt hệ thống',
   type: 'document',
+  groups: [
+    {
+      name: 'general',
+      title: '⚙️ Cài đặt chung',
+      default: true,
+    },
+    {
+      name: 'affipad',
+      title: '⚡ AffiPad Multi-Account Pool',
+    },
+    {
+      name: 'facebook_sample',
+      title: '📱 Link Facebook Mẫu',
+    },
+    {
+      name: 'telegram',
+      title: '🤖 Thông báo Telegram',
+    },
+  ],
   fields: [
     defineField({
       name: 'affiliateId',
       title: 'Shopee Affiliate ID (an_XXXXXXXXXXX)',
       description: 'Mã định danh duy nhất của bạn. Hệ thống tự động ghép vào link của khách.',
       type: 'string',
+      group: 'general',
       validation: (Rule) => Rule.required().error('Bắt buộc phải nhập Affiliate ID'),
       initialValue: 'an_17387060372',
     }),
@@ -17,84 +37,29 @@ export const appConfig = defineType({
       name: 'defaultSubId',
       title: 'Mã chiến dịch mặc định (Sub ID)',
       type: 'string',
+      group: 'general',
       initialValue: 'web_converter',
     }),
     defineField({
       name: 'savingsNotice',
       title: 'Thông báo tiết kiệm',
       type: 'string',
+      group: 'general',
       initialValue: 'Áp dụng mã trên App Shopee để nhận ưu đãi cao nhất!',
     }),
     defineField({
       name: 'zaloGroupUrl',
       title: 'Link Nhóm Zalo Săn Sale',
       type: 'url',
+      group: 'general',
       initialValue: 'https://zalo.me/g/kczvyi443',
     }),
     defineField({
       name: 'autoBlinkTopDiscount',
       title: 'Tự động nhấp nháy mã giảm sâu nhất',
       type: 'boolean',
+      group: 'general',
       initialValue: true,
-    }),
-    defineField({
-      name: 'facebookSampleUrls',
-      title: 'Danh sách Link Facebook Mẫu (Pool Token FB Sống)',
-      description:
-        'Nhập các đường link Shopee lấy từ Facebook Reels / Bài post (chấp nhận cả link rút gọn s.shopee.vn, vn.shp.ee hoặc link dài). Hệ thống sẽ tự động giải mã lấy Token bảo mật mới nhất và xoay tua áp mã Facebook cho khách.',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          name: 'facebookSampleItem',
-          title: 'Link Facebook Mẫu',
-          fields: [
-            {
-              name: 'url',
-              title: 'Đường link Shopee từ Facebook (s.shopee.vn, vn.shp.ee hoặc shopee.vn)',
-              type: 'text',
-              rows: 3,
-              validation: (Rule: any) =>
-                Rule.required()
-                  .custom((url: string) => {
-                    if (!url) return 'Vui lòng nhập link';
-                    if (!url.includes('shopee.vn') && !url.includes('shp.ee') && !url.includes('shope.ee')) {
-                      return 'Link phải là link Shopee (shopee.vn, s.shopee.vn, vn.shp.ee)';
-                    }
-                    return true;
-                  }),
-            },
-            {
-              name: 'label',
-              title: 'Ghi chú nguồn link',
-              type: 'string',
-              description: 'Ví dụ: Link FB Reels 1, Link Post Nhóm...',
-              initialValue: 'Link FB Mẫu',
-            },
-            {
-              name: 'isActive',
-              title: 'Bật sử dụng link này',
-              type: 'boolean',
-              initialValue: true,
-            },
-          ],
-          preview: {
-            select: {
-              title: 'label',
-              url: 'url',
-              active: 'isActive',
-            },
-            prepare({ title, url, active }: any) {
-              const status = active !== false ? '🟢 [ĐANG BẬT]' : '⚪ [TẮT]';
-              return {
-                title: `${status} ${title || 'Link FB'}`,
-                subtitle: url ? `${url.substring(0, 60)}...` : 'Chưa có link',
-              };
-            },
-          },
-        },
-      ],
-      validation: (Rule) => Rule.max(10).error('Tối đa 10 link mẫu'),
     }),
     defineField({
       name: 'enableAffipad',
@@ -102,6 +67,7 @@ export const appConfig = defineType({
       description:
         'Sử dụng API AffiPad để tự động tạo link Shopee có chứa credential_token riêng cho từng sản phẩm. Giúp 100% người dùng khi bấm mở App Shopee đều nhận được mã giảm giá.',
       type: 'boolean',
+      group: 'affipad',
       initialValue: true,
     }),
     defineField({
@@ -110,6 +76,7 @@ export const appConfig = defineType({
       description:
         'Thêm các tài khoản AffiPad (mỗi tài khoản miễn phí 1.000 lượt/tháng). Hệ thống sẽ tự động xoay tua (Round-Robin) và tự động đổi tài khoản khi hết hạn mức (Auto-Failover).',
       type: 'array',
+      group: 'affipad',
       hidden: ({ parent }) => parent?.enableAffipad === false,
       of: [
         {
@@ -169,14 +136,76 @@ export const appConfig = defineType({
       description:
         'Số giờ lưu lại link sản phẩm đã convert. Khách tiếp theo dán cùng sản phẩm sẽ nhận link ngay lập tức mà KHÔNG tốn quota của AffiPad (Mặc định: 12 giờ).',
       type: 'number',
+      group: 'affipad',
       initialValue: 12,
       hidden: ({ parent }) => parent?.enableAffipad === false,
+    }),
+    defineField({
+      name: 'facebookSampleUrls',
+      title: 'Danh sách Link Facebook Mẫu (Pool Token FB Sống)',
+      description:
+        'Nhập các đường link Shopee lấy từ Facebook Reels / Bài post (chấp nhận cả link rút gọn s.shopee.vn, vn.shp.ee hoặc link dài). Hệ thống sẽ tự động giải mã lấy Token bảo mật mới nhất và xoay tua áp mã Facebook cho khách.',
+      type: 'array',
+      group: 'facebook_sample',
+      of: [
+        {
+          type: 'object',
+          name: 'facebookSampleItem',
+          title: 'Link Facebook Mẫu',
+          fields: [
+            {
+              name: 'url',
+              title: 'Đường link Shopee từ Facebook (s.shopee.vn, vn.shp.ee hoặc shopee.vn)',
+              type: 'text',
+              rows: 3,
+              validation: (Rule: any) =>
+                Rule.required()
+                  .custom((url: string) => {
+                    if (!url) return 'Vui lòng nhập link';
+                    if (!url.includes('shopee.vn') && !url.includes('shp.ee') && !url.includes('shope.ee')) {
+                      return 'Link phải là link Shopee (shopee.vn, s.shopee.vn, vn.shp.ee)';
+                    }
+                    return true;
+                  }),
+            },
+            {
+              name: 'label',
+              title: 'Ghi chú nguồn link',
+              type: 'string',
+              description: 'Ví dụ: Link FB Reels 1, Link Post Nhóm...',
+              initialValue: 'Link FB Mẫu',
+            },
+            {
+              name: 'isActive',
+              title: 'Bật sử dụng link này',
+              type: 'boolean',
+              initialValue: true,
+            },
+          ],
+          preview: {
+            select: {
+              title: 'label',
+              url: 'url',
+              active: 'isActive',
+            },
+            prepare({ title, url, active }: any) {
+              const status = active !== false ? '🟢 [ĐANG BẬT]' : '⚪ [TẮT]';
+              return {
+                title: `${status} ${title || 'Link FB'}`,
+                subtitle: url ? `${url.substring(0, 60)}...` : 'Chưa có link',
+              };
+            },
+          },
+        },
+      ],
+      validation: (Rule) => Rule.max(10).error('Tối đa 10 link mẫu'),
     }),
     defineField({
       name: 'enableTelegramNotify',
       title: 'Bật thông báo lượt Click về Telegram',
       description: 'Gửi tin nhắn tức thời đến Telegram Bot mỗi khi người dùng click vào nút voucher mở App Shopee.',
       type: 'boolean',
+      group: 'telegram',
       initialValue: true,
     }),
     defineField({
@@ -184,6 +213,7 @@ export const appConfig = defineType({
       title: 'Telegram Bot Token',
       description: 'Mã Token của Bot do @BotFather cấp (ví dụ: 7812345678:AAH...)',
       type: 'string',
+      group: 'telegram',
       hidden: ({ parent }) => !parent?.enableTelegramNotify,
     }),
     defineField({
@@ -191,6 +221,7 @@ export const appConfig = defineType({
       title: 'Telegram Chat ID / Group ID',
       description: 'ID người nhận hoặc Group Telegram nhận thông báo (ví dụ: -100123456789 hoặc 987654321)',
       type: 'string',
+      group: 'telegram',
       hidden: ({ parent }) => !parent?.enableTelegramNotify,
     }),
     defineField({
@@ -198,6 +229,7 @@ export const appConfig = defineType({
       title: 'Thời gian giãn cách chống spam (Giây)',
       description: 'Khoảng thời gian tối thiểu giữa 2 lần gửi thông báo cho cùng 1 sản phẩm từ 1 người dùng (Mặc định: 30 giây).',
       type: 'number',
+      group: 'telegram',
       initialValue: 30,
       hidden: ({ parent }) => !parent?.enableTelegramNotify,
     }),

@@ -4,12 +4,32 @@ export const themeConfig = defineType({
   name: 'themeConfig',
   title: 'Cài đặt giao diện',
   type: 'document',
+  groups: [
+    {
+      name: 'branding',
+      title: '🎨 Logo & Nền Trang',
+      default: true,
+    },
+    {
+      name: 'banner',
+      title: '📢 Banner & Tiêu Đề',
+    },
+    {
+      name: 'zalo_widget',
+      title: '💬 Nhóm Zalo & Chatbox',
+    },
+    {
+      name: 'seo',
+      title: '🔍 Cấu hình SEO Meta',
+    },
+  ],
   fields: [
     // --- 1. LOGO & THƯƠNG HIỆU ---
     defineField({
       name: 'logoType',
       title: 'Kiểu Logo',
       type: 'string',
+      group: 'branding',
       options: {
         list: [
           { title: '📝 Chữ (Text Logo)', value: 'text' },
@@ -23,6 +43,7 @@ export const themeConfig = defineType({
       name: 'logoText',
       title: 'Tên Logo chính (Text)',
       type: 'string',
+      group: 'branding',
       initialValue: 'SALE',
       hidden: ({ parent }) => parent?.logoType === 'image',
     }),
@@ -30,6 +51,7 @@ export const themeConfig = defineType({
       name: 'logoHighlightText',
       title: 'Chữ nổi bật (Màu cam)',
       type: 'string',
+      group: 'branding',
       initialValue: 'SỐC',
       hidden: ({ parent }) => parent?.logoType === 'image',
     }),
@@ -38,12 +60,14 @@ export const themeConfig = defineType({
       title: 'Huy hiệu Logo (Badge nhỏ bên cạnh)',
       description: 'Ví dụ: VIP, PRO, SALE 9.9, HOT...',
       type: 'string',
+      group: 'branding',
       initialValue: 'PRO',
     }),
     defineField({
       name: 'logoImage',
       title: 'Tải lên Hình ảnh Logo (Nếu chọn kiểu Image)',
       type: 'image',
+      group: 'branding',
       options: {
         hotspot: true,
       },
@@ -53,6 +77,7 @@ export const themeConfig = defineType({
       name: 'subTitle',
       title: 'Slogan / Dòng chữ dưới logo',
       type: 'string',
+      group: 'branding',
       initialValue: 'Voucher Hunter Shopee',
     }),
 
@@ -61,6 +86,7 @@ export const themeConfig = defineType({
       name: 'backgroundType',
       title: 'Kiểu Nền Trang (Background Type)',
       type: 'string',
+      group: 'branding',
       options: {
         list: [
           { title: '🎨 Màu đơn sắc (Solid Color)', value: 'solid' },
@@ -75,6 +101,7 @@ export const themeConfig = defineType({
       name: 'backgroundColor',
       title: 'Màu nền chính (Mã Hex)',
       type: 'string',
+      group: 'branding',
       initialValue: '#0b0f19',
       description: 'Ví dụ: #0b0f19 (Tối hiện đại), #000000 (Đen tuyền), #0f172a (Xanh đêm)...',
     }),
@@ -82,6 +109,7 @@ export const themeConfig = defineType({
       name: 'gradientStart',
       title: 'Màu Gradient Bắt đầu (Top)',
       type: 'string',
+      group: 'branding',
       initialValue: '#0b0f19',
       hidden: ({ parent }) => parent?.backgroundType !== 'gradient',
     }),
@@ -89,6 +117,7 @@ export const themeConfig = defineType({
       name: 'gradientEnd',
       title: 'Màu Gradient Kết thúc (Bottom)',
       type: 'string',
+      group: 'branding',
       initialValue: '#1c1008',
       hidden: ({ parent }) => parent?.backgroundType !== 'gradient',
     }),
@@ -97,6 +126,7 @@ export const themeConfig = defineType({
       title: 'Tải lên Hình Nền (Background Image)',
       description: 'Tải ảnh nền tùy ý (sẽ tự động phủ lớp tối mờ để chữ luôn nổi bật)',
       type: 'image',
+      group: 'branding',
       options: {
         hotspot: true,
       },
@@ -107,6 +137,7 @@ export const themeConfig = defineType({
       title: 'Độ tối lớp phủ hình nền (%)',
       description: '0% là trong suốt, 85% là tối vừa phải để đọc chữ tốt nhất.',
       type: 'number',
+      group: 'branding',
       initialValue: 85,
       validation: (Rule) => Rule.min(0).max(100),
       hidden: ({ parent }) => parent?.backgroundType !== 'image',
@@ -118,6 +149,7 @@ export const themeConfig = defineType({
       title: 'Bật hiển thị Khối Hero Banner',
       description: 'Bật / Tắt toàn bộ khối banner trên ô nhập link',
       type: 'boolean',
+      group: 'banner',
       initialValue: true,
     }),
     defineField({
@@ -125,6 +157,7 @@ export const themeConfig = defineType({
       title: 'Kiểu hiển thị Hero Banner',
       description: 'Lựa chọn phong cách banner phù hợp với ngày thường hoặc đợt Mega Sale',
       type: 'string',
+      group: 'banner',
       options: {
         list: [
           { title: '✨ Tiêu chuẩn Tinh Gọn (Tiêu đề + Badge + Tags)', value: 'compact_text' },
@@ -141,6 +174,7 @@ export const themeConfig = defineType({
       name: 'bannerBadgeText',
       title: 'Dòng chữ huy hiệu đầu trang (Badge)',
       type: 'string',
+      group: 'banner',
       initialValue: 'Tự động kích hoạt mã giảm giá sâu nhất',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType === 'image_banner',
     }),
@@ -148,6 +182,7 @@ export const themeConfig = defineType({
       name: 'heroTitle',
       title: 'Tiêu đề chính (Hero Title)',
       type: 'string',
+      group: 'banner',
       initialValue: 'Chuyển Đổi Link Shopee',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType === 'image_banner' || parent?.heroBannerType === 'fomo_ticker',
     }),
@@ -155,6 +190,7 @@ export const themeConfig = defineType({
       name: 'heroSubtitle',
       title: 'Mô tả phụ dưới tiêu đề',
       type: 'text',
+      group: 'banner',
       rows: 2,
       initialValue: 'Dán link sản phẩm Shopee để nhận ngay mã FB 22%, YouTube 20% độc quyền.',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType === 'image_banner' || parent?.heroBannerType === 'fomo_ticker',
@@ -164,6 +200,7 @@ export const themeConfig = defineType({
       title: 'Danh sách thẻ lợi ích nổi bật (Tags)',
       description: 'Các thẻ nhỏ bên dưới mô tả (Ví dụ: Mã FB 22%, Mã YouTube 20%, Shopee Live, Tự động áp mã)',
       type: 'array',
+      group: 'banner',
       of: [{ type: 'string' }],
       initialValue: ['Mã FB 22%', 'Mã YouTube 20%', 'Shopee Live & Video', 'Tự động áp mã'],
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'compact_text',
@@ -173,6 +210,7 @@ export const themeConfig = defineType({
       title: 'Nội dung Dải tin khẩn (Ticker / Breaking News)',
       description: 'Dòng thông báo khẩn cấp dạng ticker chạy hoặc nhấp nháy tạo độ khan hiếm',
       type: 'string',
+      group: 'banner',
       initialValue: '🔥 Đang phát mã giảm giá FB 22% (tối đa 300k) & YouTube 20% độc quyền - Tự động áp khi dán link!',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'fomo_ticker',
     }),
@@ -180,6 +218,7 @@ export const themeConfig = defineType({
       name: 'heroCardTag',
       title: 'Nhãn góc Thẻ Chiến Dịch',
       type: 'string',
+      group: 'banner',
       initialValue: 'ĐỢT PHÁT MÃ 0H',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'interactive_card',
     }),
@@ -188,6 +227,7 @@ export const themeConfig = defineType({
       title: '🖼️ Ảnh Banner cho Máy Tính (Desktop)',
       description: 'Tỉ lệ chuẩn ngang 4:1 hoặc 3.5:1 (VD: 1200x300px hoặc 1000x280px). Hiển thị trên PC / Laptop.',
       type: 'image',
+      group: 'banner',
       options: {
         hotspot: true,
       },
@@ -198,6 +238,7 @@ export const themeConfig = defineType({
       title: '📱 Ảnh Banner cho Điện Thoại (Mobile)',
       description: 'Tỉ lệ chuẩn ngang 3:1 hoặc 2.8:1 (VD: 750x250px hoặc 600x210px). Hiển thị trên Smartphone/Tablet. Nếu để trống sẽ tự lấy ảnh Desktop.',
       type: 'image',
+      group: 'banner',
       options: {
         hotspot: true,
       },
@@ -207,6 +248,7 @@ export const themeConfig = defineType({
       name: 'heroBannerAltText',
       title: 'Mô tả ảnh banner (Alt Text - SEO)',
       type: 'string',
+      group: 'banner',
       initialValue: 'Săn mã giảm giá Shopee độc quyền 22%',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.heroBannerType !== 'image_banner',
     }),
@@ -214,6 +256,7 @@ export const themeConfig = defineType({
       name: 'bannerClickAction',
       title: 'Hành vi khi người dùng click vào Banner',
       type: 'string',
+      group: 'banner',
       options: {
         list: [
           { title: '🎯 Tự động Focus vào ô Dán Link (Khuyên dùng)', value: 'focus_input' },
@@ -229,6 +272,7 @@ export const themeConfig = defineType({
       title: 'Đường link đích (Nếu chọn Mở đường link)',
       description: 'Đường dẫn mở tab mới khi click vào banner. Ví dụ: Link Nhóm Zalo hoặc Trang sự kiện Shopee',
       type: 'url',
+      group: 'banner',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.bannerClickAction !== 'open_link' || parent?.heroBannerType === 'compact_text',
     }),
     defineField({
@@ -236,6 +280,7 @@ export const themeConfig = defineType({
       title: '⚠️ Đoạn Lưu ý cố định dưới danh sách Voucher',
       description: 'Nội dung hướng dẫn / xử lý sự cố hiển thị trong khung viền vàng nổi bật dưới các nút voucher',
       type: 'text',
+      group: 'banner',
       rows: 2,
       initialValue: 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
     }),
@@ -246,12 +291,14 @@ export const themeConfig = defineType({
       title: 'Hiển thị Thẻ Nhóm Zalo Báo Mã Săn Sale',
       description: 'Bật / Tắt khối giới thiệu nhóm Zalo trên trang chủ',
       type: 'boolean',
+      group: 'zalo_widget',
       initialValue: true,
     }),
     defineField({
       name: 'zaloCardTitle',
       title: 'Tiêu đề Thẻ Nhóm Zalo',
       type: 'string',
+      group: 'zalo_widget',
       initialValue: 'Nhóm Zalo Báo Mã Săn Sale',
       hidden: ({ parent }) => parent?.showZaloCard === false,
     }),
@@ -259,6 +306,7 @@ export const themeConfig = defineType({
       name: 'zaloCardSubtitle',
       title: 'Mô tả Thẻ Nhóm Zalo',
       type: 'string',
+      group: 'zalo_widget',
       initialValue: 'Báo mã FB 22%, Shopee Live & Flash Sale trước 15 phút',
       hidden: ({ parent }) => parent?.showZaloCard === false,
     }),
@@ -266,6 +314,7 @@ export const themeConfig = defineType({
       name: 'zaloCardMembers',
       title: 'Số lượng thành viên hiển thị',
       type: 'string',
+      group: 'zalo_widget',
       initialValue: 'Hơn 15.000+ thành viên',
       hidden: ({ parent }) => parent?.showZaloCard === false,
     }),
@@ -273,6 +322,7 @@ export const themeConfig = defineType({
       name: 'zaloCardButtonText',
       title: 'Chữ trên nút bấm Thẻ Zalo',
       type: 'string',
+      group: 'zalo_widget',
       initialValue: 'Vào Nhóm Zalo Săn Sale (Miễn Phí)',
       hidden: ({ parent }) => parent?.showZaloCard === false,
     }),
@@ -283,12 +333,14 @@ export const themeConfig = defineType({
       title: 'Bật Chatbox Zalo nổi ở góc màn hình (Floating Widget)',
       description: 'Bật / Tắt nút tròn Zalo nhấp nháy phát sáng ở góc dưới bên phải',
       type: 'boolean',
+      group: 'zalo_widget',
       initialValue: true,
     }),
     defineField({
       name: 'floatingZaloText',
       title: 'Nội dung bong bóng Chatbox Zalo',
       type: 'string',
+      group: 'zalo_widget',
       initialValue: 'Nhận mã 22% & mã Live sớm nhất! 💬',
       hidden: ({ parent }) => parent?.showFloatingZalo === false,
     }),
@@ -299,6 +351,7 @@ export const themeConfig = defineType({
       title: 'Tiêu đề SEO (Meta Title)',
       description: 'Tiêu đề hiển thị trên Google và tab trình duyệt (Để trống sẽ tự động lấy Tiêu đề chính)',
       type: 'string',
+      group: 'seo',
       validation: (Rule) => Rule.max(70).warning('Nên dưới 70 ký tự để hiển thị tốt nhất trên Google'),
     }),
     defineField({
@@ -306,6 +359,7 @@ export const themeConfig = defineType({
       title: 'Mô tả SEO (Meta Description)',
       description: 'Mô tả ngắn gọn hiển thị trên kết quả tìm kiếm Google (Để trống sẽ tự động lấy Mô tả phụ)',
       type: 'text',
+      group: 'seo',
       rows: 3,
       validation: (Rule) => Rule.max(160).warning('Nên dưới 160 ký tự để tránh bị Google cắt bớt'),
     }),
@@ -314,6 +368,7 @@ export const themeConfig = defineType({
       title: 'Từ khóa SEO (Keywords)',
       description: 'Các từ khóa ngăn cách bằng dấu phẩy. Ví dụ: săn mã shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live',
       type: 'string',
+      group: 'seo',
       initialValue: 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
     }),
     defineField({
@@ -321,6 +376,7 @@ export const themeConfig = defineType({
       title: 'Ảnh xem trước khi chia sẻ (OpenGraph / Social Image)',
       description: 'Ảnh hiển thị khi chia sẻ link lên Zalo, Facebook, Messenger, Telegram. Khuyến nghị tỉ lệ chuẩn 1200x630px',
       type: 'image',
+      group: 'seo',
       options: {
         hotspot: true,
       },
@@ -330,6 +386,7 @@ export const themeConfig = defineType({
       title: 'Tên miền chính thức (Canonical URL)',
       description: 'Ví dụ: https://sanmakhuyenmai.vn (Để trống sẽ tự động nhận diện theo domain truy cập)',
       type: 'url',
+      group: 'seo',
     }),
   ],
   preview: {
