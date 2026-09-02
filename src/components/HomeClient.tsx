@@ -93,8 +93,8 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
 
       <Header theme={theme} />
 
-      <main className="w-full max-w-xl px-4 pt-4 sm:pt-5 pb-8 flex-1 flex flex-col justify-between">
-        <div className="space-y-4">
+      <main className="w-full max-w-xl px-3.5 pt-2 sm:pt-4 pb-12 sm:pb-8 flex-1 flex flex-col justify-between">
+        <div className="space-y-2.5 sm:space-y-3.5">
           {/* Dynamic Hero Banner Section (Configurable from Sanity CMS) */}
           <HeroBanner theme={theme} />
 
@@ -106,14 +106,14 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
 
           {/* Error Alert */}
           {errorMsg && (
-            <div className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-3 text-center text-xs font-medium text-rose-300">
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-2.5 text-center text-xs font-medium text-rose-300">
               ⚠️ {errorMsg}
             </div>
           )}
 
           {/* When NO result yet: Render High-Converting Teaser & Quick Guide */}
           {!result && (
-            <div className="space-y-3.5 pt-1 animate-fadeIn">
+            <div className="space-y-2.5 pt-0.5 animate-fadeIn">
               <HomeVouchersTeaser />
               <QuickGuideSteps />
             </div>
