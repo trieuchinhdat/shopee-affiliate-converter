@@ -6,6 +6,9 @@ import HeroBanner from '@/components/HeroBanner';
 import ConvertInput from '@/components/ConvertInput';
 import ProductCard from '@/components/ProductCard';
 import VoucherButtons from '@/components/VoucherButtons';
+import SocialProofTicker from '@/components/SocialProofTicker';
+import HomeVouchersTeaser from '@/components/HomeVouchersTeaser';
+import QuickGuideSteps from '@/components/QuickGuideSteps';
 import ZaloCommunityCard from '@/components/ZaloCommunityCard';
 import FloatingZaloWidget from '@/components/FloatingZaloWidget';
 import Footer from '@/components/Footer';
@@ -98,10 +101,21 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
           {/* Input Form */}
           <ConvertInput onConvert={handleConvert} isLoading={isLoading} />
 
+          {/* Social Proof Real-time Ticker */}
+          <SocialProofTicker />
+
           {/* Error Alert */}
           {errorMsg && (
             <div className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-3 text-center text-xs font-medium text-rose-300">
               ⚠️ {errorMsg}
+            </div>
+          )}
+
+          {/* When NO result yet: Render High-Converting Teaser & Quick Guide */}
+          {!result && (
+            <div className="space-y-3.5 pt-1 animate-fadeIn">
+              <HomeVouchersTeaser />
+              <QuickGuideSteps />
             </div>
           )}
 
