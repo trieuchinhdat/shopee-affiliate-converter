@@ -74,6 +74,7 @@ export interface ThemeConfig {
   heroBannerAltText?: string;
   bannerClickAction?: 'focus_input' | 'open_link';
   heroBannerLink?: string;
+  voucherNoticeText?: string;
   zaloGroupUrl?: string;
   // Zalo Community Card Settings
   showZaloCard?: boolean;
@@ -99,10 +100,12 @@ export interface FacebookSampleItem {
 }
 
 export interface FacebookTemplatePayload {
-  encryptedPayload: string;
-  fbContentId: string;
+  tokenType?: 'credential' | 'encrypted';
+  credentialToken?: string;
+  encryptedPayload?: string;
+  fbContentId?: string;
   gadsTSig?: string;
-  utmCampaign: string;
+  utmCampaign?: string;
   expGroup?: string;
   contentType?: string;
   contentSource?: string;

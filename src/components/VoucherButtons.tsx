@@ -9,6 +9,7 @@ interface VoucherButtonsProps {
   links: UniversalLinks;
   productName?: string;
   product?: ShopeeProduct;
+  noticeText?: string;
 }
 
 export default function VoucherButtons({
@@ -16,6 +17,7 @@ export default function VoucherButtons({
   links,
   productName,
   product,
+  noticeText,
 }: VoucherButtonsProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -86,8 +88,15 @@ export default function VoucherButtons({
       }
     }
 
-    // Open target link without noreferrer so Shopee can track the social referrer context
-    window.open(url, '_blank', 'noopener');
+    // Open target link (use window.location.href on mobile for instant Universal Link / App evoke, window.open on desktop)
+    if (typeof window !== 'undefined') {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        window.location.href = url;
+      } else {
+        window.open(url, '_blank', 'noopener');
+      }
+    }
   };
 
   const handleCopy = (code: string, e: React.MouseEvent) => {
@@ -441,6 +450,17 @@ export default function VoucherButtons({
             </div>
           );
         })}
+      </div>
+
+      {/* Important Troubleshooting Notice Card (Fixed below Vouchers) */}
+      <div className="rounded-2xl border border-amber-500/40 bg-[#111827]/90 p-3.5 sm:p-4 shadow-xl backdrop-blur-md transition-all hover:border-amber-400/70">
+        <p className="text-xs sm:text-[13px] leading-relaxed text-slate-100">
+          <strong className="font-black text-amber-400">Lưu ý: </strong>
+          <span className="font-semibold text-slate-100">
+            {noticeText ||
+              'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.'}
+          </span>
+        </p>
       </div>
     </div>
   );

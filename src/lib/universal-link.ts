@@ -32,7 +32,8 @@ interface FbPayloadCacheEntry {
 const fbPayloadCache = new Map<string, FbPayloadCacheEntry>();
 
 /**
- * Safely parses any raw Shopee Facebook link or query string to extract its security token & signature payload
+ * Safely parses any raw Shopee Facebook link, query string, or HTML body to extract its security token & signature payload.
+ * Supports both modern Shopee Affiliate short links (credential_token) and Meta Ads direct links (encrypted_payload).
  */
 export function parseFacebookPayload(rawUrl: string): FacebookTemplatePayload | null {
   if (!rawUrl || typeof rawUrl !== 'string') return null;
@@ -47,12 +48,57 @@ export function parseFacebookPayload(rawUrl: string): FacebookTemplatePayload | 
       // Ignore URL constructor error and fallback to regex
     }
 
+    // 1. Check for credential_token (Shopee Affiliate Short Link / s.shopee.vn format)
+    let credentialToken = params?.get('credential_token');
+    if (!credentialToken) {
+      const matchCred = rawUrl.match(/[?&"'\\]credential_token=([^&"'\s\\]+)/i);
+      if (matchCred && matchCred[1]) {
+        credentialToken = decodeURIComponent(matchCred[1]);
+      }
+    }
+
+    let gadsTSig = params?.get('gads_t_sig') || undefined;
+    if (!gadsTSig) {
+      const matchSig = rawUrl.match(/[?&"'\\]gads_t_sig=([^&"'\s\\]+)/i);
+      if (matchSig && matchSig[1]) {
+        try {
+          gadsTSig = decodeURIComponent(matchSig[1]);
+        } catch {
+          gadsTSig = matchSig[1];
+        }
+      }
+    }
+
+    let utmCampaign = params?.get('utm_campaign') || undefined;
+    if (!utmCampaign) {
+      const matchCamp = rawUrl.match(/[?&"'\\]utm_campaign=([^&"'\s\\]+)/i);
+      if (matchCamp && matchCamp[1]) {
+        try {
+          utmCampaign = decodeURIComponent(matchCamp[1]);
+        } catch {
+          utmCampaign = matchCamp[1];
+        }
+      }
+    }
+
+    const expGroup = params?.get('exp_group') || 'rollout';
+
+    if (credentialToken) {
+      return {
+        tokenType: 'credential',
+        credentialToken,
+        gadsTSig,
+        utmCampaign: utmCampaign || '-',
+        expGroup,
+      };
+    }
+
+    // 2. Check for encrypted_payload & fb_content_id (Meta Ads direct format)
     let encryptedPayload = params?.get('encrypted_payload');
     let fbContentId = params?.get('fb_content_id');
 
-    // Fallback regex matching in case parameters are in HTML, JSON, or escaped string
     if (!encryptedPayload) {
-      const match = rawUrl.match(/[?&]encrypted_payload=([^&"'\s]+)/i);
+      const match = rawUrl.match(/[?&"'\\]encrypted_payload=([^&"'\s\\]+)/i);
       if (match && match[1]) {
         try {
           encryptedPayload = decodeURIComponent(match[1]);
@@ -63,7 +109,7 @@ export function parseFacebookPayload(rawUrl: string): FacebookTemplatePayload | 
     }
 
     if (!fbContentId) {
-      const match = rawUrl.match(/[?&]fb_content_id=([^&"'\s]+)/i);
+      const match = rawUrl.match(/[?&"'\\]fb_content_id=([^&"'\s\\]+)/i);
       if (match && match[1]) {
         try {
           fbContentId = decodeURIComponent(match[1]);
@@ -73,36 +119,23 @@ export function parseFacebookPayload(rawUrl: string): FacebookTemplatePayload | 
       }
     }
 
-    if (!encryptedPayload || !fbContentId) {
-      return null;
+    if (encryptedPayload && fbContentId) {
+      const contentType = params?.get('content_type') || 'REELS';
+      const contentSource = params?.get('content_source') || 'fb';
+
+      return {
+        tokenType: 'encrypted',
+        encryptedPayload,
+        fbContentId,
+        gadsTSig,
+        utmCampaign: utmCampaign || `id_fb-fbcontent_${encryptedPayload}`,
+        expGroup,
+        contentType,
+        contentSource,
+      };
     }
 
-    let gadsTSig = params?.get('gads_t_sig') || undefined;
-    if (!gadsTSig) {
-      const matchSig = rawUrl.match(/[?&]gads_t_sig=([^&"'\s]+)/i);
-      if (matchSig && matchSig[1]) {
-        try {
-          gadsTSig = decodeURIComponent(matchSig[1]);
-        } catch {
-          gadsTSig = matchSig[1];
-        }
-      }
-    }
-
-    const utmCampaign = params?.get('utm_campaign') || `id_fb-fbcontent_${encryptedPayload}`;
-    const expGroup = params?.get('exp_group') || 'rollout';
-    const contentType = params?.get('content_type') || 'REELS';
-    const contentSource = params?.get('content_source') || 'fb';
-
-    return {
-      encryptedPayload,
-      fbContentId,
-      gadsTSig,
-      utmCampaign,
-      expGroup,
-      contentType,
-      contentSource,
-    };
+    return null;
   } catch (err) {
     console.error('[UniversalLink] Error parsing Facebook sample URL:', err);
     return null;
@@ -133,91 +166,34 @@ export async function resolveAndExtractFacebookPayload(rawUrl: string): Promise<
     return directPayload;
   }
 
-  // 2. Short link resolution: Follow redirects to retrieve the real destination URL
-  let currentUrl = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-  const maxHops = 6;
+  // 2. Short link resolution: Fetch with follow redirects first
+  const currentUrl = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 
-  for (let i = 0; i < maxHops; i++) {
-    try {
-      const res = await fetch(currentUrl, {
-        method: 'GET',
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/460.0.0.0;FBDV/iPhone15,2;FBMD/iPhone;FBSN/iOS;FBSV/17.5;FBSS/3;FBCR/Viettel;FBID/phone;FBLC/vi_VN;FBOP/5]',
-          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-        },
-        redirect: 'manual',
-      });
-
-      const location = res.headers.get('location');
-      if (location) {
-        const locFull = location.startsWith('http') ? location : new URL(location, currentUrl).toString();
-        const parsedFromLoc = parseFacebookPayload(locFull);
-        if (parsedFromLoc) {
-          fbPayloadCache.set(cacheKey, {
-            payload: parsedFromLoc,
-            expiresAt: Date.now() + 60 * 60 * 1000,
-          });
-          return parsedFromLoc;
-        }
-        currentUrl = locFull;
-        continue;
-      }
-
-      // If no location header, inspect response body
-      const bodyHtml = await res.text();
-      const parsedFromBody = parseFacebookPayload(bodyHtml);
-      if (parsedFromBody) {
-        fbPayloadCache.set(cacheKey, {
-          payload: parsedFromBody,
-          expiresAt: Date.now() + 60 * 60 * 1000,
-        });
-        return parsedFromBody;
-      }
-
-      if (res.url && res.url !== currentUrl) {
-        const parsedFromResUrl = parseFacebookPayload(res.url);
-        if (parsedFromResUrl) {
-          fbPayloadCache.set(cacheKey, {
-            payload: parsedFromResUrl,
-            expiresAt: Date.now() + 60 * 60 * 1000,
-          });
-          return parsedFromResUrl;
-        }
-        currentUrl = res.url;
-      }
-      break;
-    } catch (hopErr) {
-      console.error('[UniversalLink] Error resolving FB sample hop:', hopErr);
-      break;
-    }
-  }
-
-  // Fallback with Facebook external hit bot UA
   try {
-    const botRes = await fetch(currentUrl, {
+    const res = await fetch(currentUrl, {
       method: 'GET',
       headers: {
-        'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+        'User-Agent':
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/460.0.0.0;FBDV/iPhone15,2;FBMD/iPhone;FBSN/iOS;FBSV/17.5;FBSS/3;FBCR/Viettel;FBID/phone;FBLC/vi_VN;FBOP/5]',
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
       },
       redirect: 'follow',
     });
 
-    if (botRes.url) {
-      const parsedUrl = parseFacebookPayload(botRes.url);
-      if (parsedUrl) {
+    if (res.url && res.url !== currentUrl) {
+      const parsedResUrl = parseFacebookPayload(res.url);
+      if (parsedResUrl) {
         fbPayloadCache.set(cacheKey, {
-          payload: parsedUrl,
+          payload: parsedResUrl,
           expiresAt: Date.now() + 60 * 60 * 1000,
         });
-        return parsedUrl;
+        return parsedResUrl;
       }
     }
 
-    const botHtml = await botRes.text();
-    const parsedHtml = parseFacebookPayload(botHtml);
+    const html = await res.text();
+    const parsedHtml = parseFacebookPayload(html);
     if (parsedHtml) {
       fbPayloadCache.set(cacheKey, {
         payload: parsedHtml,
@@ -225,8 +201,51 @@ export async function resolveAndExtractFacebookPayload(rawUrl: string): Promise<
       });
       return parsedHtml;
     }
-  } catch (botErr) {
-    console.error('[UniversalLink] Bot redirect fetch error for FB sample:', botErr);
+  } catch (followErr) {
+    console.error('[UniversalLink] Error following redirects:', followErr);
+  }
+
+  // 3. Fallback: Manual hop resolution
+  try {
+    let hopUrl = currentUrl;
+    for (let i = 0; i < 6; i++) {
+      const hopRes = await fetch(hopUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        redirect: 'manual',
+      });
+
+      const loc = hopRes.headers.get('location');
+      if (loc) {
+        const fullLoc = loc.startsWith('http') ? loc : new URL(loc, hopUrl).toString();
+        const parsedLoc = parseFacebookPayload(fullLoc);
+        if (parsedLoc) {
+          fbPayloadCache.set(cacheKey, {
+            payload: parsedLoc,
+            expiresAt: Date.now() + 60 * 60 * 1000,
+          });
+          return parsedLoc;
+        }
+        hopUrl = fullLoc;
+        continue;
+      }
+
+      const bodyText = await hopRes.text();
+      const parsedBody = parseFacebookPayload(bodyText);
+      if (parsedBody) {
+        fbPayloadCache.set(cacheKey, {
+          payload: parsedBody,
+          expiresAt: Date.now() + 60 * 60 * 1000,
+        });
+        return parsedBody;
+      }
+      break;
+    }
+  } catch (manualErr) {
+    console.error('[UniversalLink] Error during manual hops:', manualErr);
   }
 
   return null;
@@ -250,16 +269,32 @@ export function generateShopeeUniversalLink({
   if (channel === 'fb') {
     const activePayload = fbPayload || DEFAULT_FB_PAYLOAD;
 
+    if (activePayload.credentialToken) {
+      const params = new URLSearchParams({
+        credential_token: activePayload.credentialToken,
+        ...(activePayload.gadsTSig ? { gads_t_sig: activePayload.gadsTSig } : {}),
+        utm_campaign: activePayload.utmCampaign || '-',
+        ...(affiliateId ? { mmp_pid: affiliateId, utm_source: affiliateId } : {}),
+        utm_medium: 'affiliates',
+        utm_content: subId,
+        uls_trackid: randomUls,
+        utm_term: randomTerm,
+        exp_group: activePayload.expGroup || 'rollout',
+        lang: 'vi',
+      });
+      return `${baseUrl}?${params.toString()}`;
+    }
+
     const params = new URLSearchParams({
       channel_type: 'fb',
       content_source: activePayload.contentSource || 'fb',
       content_type: activePayload.contentType || 'REELS',
       exp_group: activePayload.expGroup || 'rollout',
       lang: 'vi',
-      encrypted_payload: activePayload.encryptedPayload,
-      fb_content_id: activePayload.fbContentId,
+      encrypted_payload: activePayload.encryptedPayload || '',
+      fb_content_id: activePayload.fbContentId || '',
       ...(activePayload.gadsTSig ? { gads_t_sig: activePayload.gadsTSig } : {}),
-      utm_campaign: activePayload.utmCampaign,
+      utm_campaign: activePayload.utmCampaign || '',
       ...(affiliateId ? { mmp_pid: affiliateId, utm_source: affiliateId } : {}),
       utm_medium: 'affiliates',
       utm_content: subId,
