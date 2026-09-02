@@ -111,6 +111,26 @@ export interface FacebookTemplatePayload {
   contentSource?: string;
 }
 
+export interface AffipadAccount {
+  _key?: string;
+  apiKey: string;
+  toolId: string;
+  label?: string;
+  isActive?: boolean;
+}
+
+export interface AffipadQuotaInfo {
+  accountId: string;
+  label: string;
+  apiKeyMasked: string;
+  plan: string;
+  limit: number;
+  used: number;
+  remaining: number;
+  isDepleted: boolean;
+  error?: string;
+}
+
 export interface AppConfig {
   affiliateId: string;
   defaultSubId?: string;
@@ -118,6 +138,10 @@ export interface AppConfig {
   zaloGroupUrl?: string;
   autoBlinkTopDiscount?: boolean;
   facebookSampleUrls?: FacebookSampleItem[];
+  // AffiPad Multi-Account Pool Settings
+  enableAffipad?: boolean;
+  affipadAccounts?: AffipadAccount[];
+  affipadCacheTtlHours?: number;
   // Telegram Notification Settings
   enableTelegramNotify?: boolean;
   telegramBotToken?: string;

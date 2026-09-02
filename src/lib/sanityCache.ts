@@ -46,6 +46,9 @@ export async function getAppConfigCached(ttl: number = 60): Promise<AppConfig> {
         zaloGroupUrl,
         autoBlinkTopDiscount,
         facebookSampleUrls,
+        enableAffipad,
+        affipadAccounts,
+        affipadCacheTtlHours,
         enableTelegramNotify,
         telegramBotToken,
         telegramChatId,
@@ -240,6 +243,7 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
           heroBannerAltText,
           bannerClickAction,
           heroBannerLink,
+          voucherNoticeText,
           // Zalo & Social Fields
           showZaloCard,
           zaloCardTitle,
@@ -292,6 +296,7 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       heroBannerAltText: rawTheme?.heroBannerAltText || 'Săn mã giảm giá Shopee độc quyền 22%',
       bannerClickAction: rawTheme?.bannerClickAction || 'focus_input',
       heroBannerLink: rawTheme?.heroBannerLink || undefined,
+      voucherNoticeText: rawTheme?.voucherNoticeText || 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
       // Zalo Card & Floating
       zaloGroupUrl: rawAppConfig?.zaloGroupUrl || 'https://zalo.me/g/kczvyi443',
       showZaloCard: rawTheme?.showZaloCard !== false,
@@ -332,6 +337,7 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
     heroTickerText: '🔥 Đang phát mã giảm giá FB 22% (tối đa 300k) & YouTube 20% độc quyền - Tự động áp khi dán link!',
     heroCardTag: 'ĐỢT PHÁT MÃ 0H',
     bannerClickAction: 'focus_input',
+    voucherNoticeText: 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
     zaloGroupUrl: 'https://zalo.me/g/kczvyi443',
     showZaloCard: true,
     zaloCardTitle: 'Nhóm Zalo Báo Mã Săn Sale',

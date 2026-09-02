@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { resolveShopeeProduct, isValidShopeeUrl, extractShopeeUrl, extractShopeeIds } from '@/lib/shopee-resolver';
 import { generateAllUniversalLinks, resolveAndExtractFacebookPayload, DEFAULT_FB_PAYLOAD } from '@/lib/universal-link';
 import { getAppConfigCached, getActiveVouchersCached } from '@/lib/sanityCache';
+import { affipadService } from '@/lib/affipad-service';
 import { ConvertResult } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
@@ -54,13 +55,42 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const links = generateAllUniversalLinks(
+    let links = generateAllUniversalLinks(
       product.shopId,
       product.itemId,
       config.affiliateId,
       config.defaultSubId || 'web_converter',
       selectedFbPayload
     );
+
+    // ⚡ 1. Try AffiPad Multi-Account Pool if enabled (Generates 100% working live credential_token)
+    if (config.enableAffipad !== false && config.affipadAccounts && config.affipadAccounts.length > 0) {
+      try {
+        const affResult = await affipadService.convertProductUrl(
+          cleanUrl,
+          product.shopId,
+          product.itemId,
+          config.affipadAccounts,
+          config.affipadCacheTtlHours || 12
+        );
+
+        if (affResult && affResult.link) {
+          const directLink = affResult.link;
+          links = {
+            facebook: {
+              fb25: directLink,
+              fb22: directLink,
+              fb20: directLink,
+            },
+            youtube: directLink,
+            instagram: directLink,
+            zalo: directLink,
+          };
+        }
+      } catch (affErr) {
+        console.error('[API Convert] Affipad conversion fallback triggered:', affErr);
+      }
+    }
 
     let maxPercent = 22;
     const topVoucher = vouchers.find((v) => v.status === 'active');

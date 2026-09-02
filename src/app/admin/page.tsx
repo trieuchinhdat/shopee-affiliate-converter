@@ -21,7 +21,24 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevalidating, setIsRevalidating] = useState(false);
   const [revalidateMsg, setRevalidateMsg] = useState<string | null>(null);
+  const [affipadData, setAffipadData] = useState<any>(null);
+  const [isLoadingQuota, setIsLoadingQuota] = useState(false);
   const router = useRouter();
+
+  const fetchAffipadQuota = async () => {
+    setIsLoadingQuota(true);
+    try {
+      const res = await fetch('/api/admin/affipad-quota');
+      const data = await res.json();
+      if (data.success) {
+        setAffipadData(data);
+      }
+    } catch (err) {
+      console.error('Error fetching Affipad quota:', err);
+    } finally {
+      setIsLoadingQuota(false);
+    }
+  };
 
   const handleRevalidate = async () => {
     setIsRevalidating(true);
@@ -31,6 +48,7 @@ export default function AdminPage() {
       if (data.success) {
         setRevalidateMsg('✅ Đã làm tươi Cache và cập nhật trang chủ thành công!');
         fetchStats();
+        fetchAffipadQuota();
         setTimeout(() => setRevalidateMsg(null), 3500);
       }
     } catch (err) {
@@ -64,6 +82,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchStats();
+    fetchAffipadQuota();
   }, [fetchStats]);
 
   const handleLogout = async () => {
@@ -174,6 +193,147 @@ export default function AdminPage() {
             </div>
             <div className="text-[10px] text-slate-500">Đã tối ưu Sanity DB</div>
           </div>
+        </div>
+
+        {/* AffiPad Multi-Account Pool Quota Monitor */}
+        <div className="rounded-xl border border-orange-500/20 bg-[#111827] p-3 sm:p-4 space-y-3 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-orange-400" />
+                <span>Hệ Thống AffiPad Multi-Account Pool</span>
+                {affipadData?.enabled === false && (
+                  <span className="bg-slate-700/50 text-slate-400 border border-slate-600/30 px-1.5 py-0.5 rounded text-[10px] normal-case">
+                    Đang tắt
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Tự động sinh link chứa credential_token riêng cho từng sản phẩm (100% người dùng nhận mã Facebook)
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <button
+                onClick={fetchAffipadQuota}
+                disabled={isLoadingQuota}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`h-3 w-3 ${isLoadingQuota ? 'animate-spin' : ''}`} />
+                <span>{isLoadingQuota ? 'Đang kiểm tra...' : 'Kiểm tra Quota'}</span>
+              </button>
+
+              <Link
+                href="/studio/structure/appConfig"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-xs font-semibold text-orange-400 hover:bg-orange-500/20 transition-colors"
+              >
+                <span>+ Thêm tài khoản</span>
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Quota Summary & Account List */}
+          {affipadData?.accounts && affipadData.accounts.length > 0 ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-white/5">
+                <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2">
+                  <div className="text-[10px] text-slate-400">Tài Khoản Hoạt Động</div>
+                  <div className="text-base font-bold text-white">
+                    {affipadData.activeAccounts || 0} / {affipadData.totalAccounts || 0}
+                  </div>
+                </div>
+                <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2">
+                  <div className="text-[10px] text-slate-400">Tổng Hạn Mức Tháng</div>
+                  <div className="text-base font-bold text-slate-200">
+                    {affipadData.totalLimit?.toLocaleString('vi-VN') || 0} lượt
+                  </div>
+                </div>
+                <div className="bg-white/[0.02] border border-white/5 rounded-lg p-2">
+                  <div className="text-[10px] text-slate-400">Đã Sử Dụng</div>
+                  <div className="text-base font-bold text-orange-400">
+                    {affipadData.totalUsed?.toLocaleString('vi-VN') || 0} lượt
+                  </div>
+                </div>
+                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-2">
+                  <div className="text-[10px] text-emerald-400 font-medium">Hạn Mức Còn Lại</div>
+                  <div className="text-base font-bold text-emerald-400">
+                    {affipadData.totalRemaining?.toLocaleString('vi-VN') || 0} lượt
+                  </div>
+                </div>
+              </div>
+
+              {/* Per-Account Breakdown Table */}
+              <div className="space-y-1.5 pt-1">
+                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Chi tiết từng tài khoản trong Pool
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {affipadData.accounts.map((acc: any, idx: number) => {
+                    const percentUsed = acc.limit > 0 ? Math.min(100, Math.round((acc.used / acc.limit) * 100)) : 0;
+                    return (
+                      <div
+                        key={acc.accountId || idx}
+                        className="bg-white/[0.02] border border-white/5 rounded-lg p-2.5 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-white flex items-center gap-1.5">
+                            <span className={acc.isDepleted ? 'text-rose-400' : 'text-emerald-400'}>●</span>
+                            <span>{acc.label}</span>
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400">{acc.apiKeyMasked}</span>
+                        </div>
+
+                        {acc.error ? (
+                          <div className="text-[11px] text-rose-400 font-medium">
+                            {acc.error}
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-between text-[11px] text-slate-400">
+                              <span>
+                                Còn: <strong className="text-emerald-400">{acc.remaining}</strong> / {acc.limit} lượt
+                              </span>
+                              <span>{percentUsed}% đã dùng</span>
+                            </div>
+                            <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${
+                                  percentUsed > 90
+                                    ? 'bg-rose-500'
+                                    : percentUsed > 70
+                                    ? 'bg-amber-500'
+                                    : 'bg-emerald-500'
+                                }`}
+                                style={{ width: `${percentUsed}%` }}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-white/[0.02] border border-dashed border-white/10 p-4 text-center space-y-2">
+              <div className="text-xs text-slate-300 font-medium">
+                Chưa có tài khoản AffiPad nào được thêm vào Pool.
+              </div>
+              <p className="text-[11px] text-slate-400 max-w-md mx-auto">
+                Hãy vào Sanity Studio để thêm tài khoản AffiPad (mỗi tài khoản miễn phí 1.000 lượt/tháng). Hệ thống sẽ tự động xoay tua và cấp link mã Facebook cho 100% khách hàng.
+              </p>
+              <Link
+                href="/studio/structure/appConfig"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-500 text-black font-bold text-xs hover:bg-orange-400 transition-colors mt-1"
+              >
+                <span>Cấu hình tài khoản ngay</span>
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* 4 Core Management Modules Quick Links */}

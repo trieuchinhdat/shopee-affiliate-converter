@@ -117,6 +117,7 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
                 links={result.links}
                 product={result.product}
                 productName={result.product.productName}
+                noticeText={theme?.voucherNoticeText}
               />
             </div>
           )}

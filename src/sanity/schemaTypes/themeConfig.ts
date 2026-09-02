@@ -231,6 +231,14 @@ export const themeConfig = defineType({
       type: 'url',
       hidden: ({ parent }) => parent?.showHeroBanner === false || parent?.bannerClickAction !== 'open_link' || parent?.heroBannerType === 'compact_text',
     }),
+    defineField({
+      name: 'voucherNoticeText',
+      title: '⚠️ Đoạn Lưu ý cố định dưới danh sách Voucher',
+      description: 'Nội dung hướng dẫn / xử lý sự cố hiển thị trong khung viền vàng nổi bật dưới các nút voucher',
+      type: 'text',
+      rows: 2,
+      initialValue: 'Nếu click link không thấy mã Youtube/Facebook/Instagram → cần xóa shopee tải lại hoặc đổi tài khoản khác do tài khoản của bạn đã bị lọc.',
+    }),
 
     // --- 4. CÀI ĐẶT THẺ NHÓM ZALO TRÊN TRANG CHỦ ---
     defineField({

@@ -97,6 +97,82 @@ export const appConfig = defineType({
       validation: (Rule) => Rule.max(10).error('Tối đa 10 link mẫu'),
     }),
     defineField({
+      name: 'enableAffipad',
+      title: '⚡ Bật hệ thống AffiPad Multi-Account (Tự động sinh link 100% hiện mã)',
+      description:
+        'Sử dụng API AffiPad để tự động tạo link Shopee có chứa credential_token riêng cho từng sản phẩm. Giúp 100% người dùng khi bấm mở App Shopee đều nhận được mã giảm giá.',
+      type: 'boolean',
+      initialValue: true,
+    }),
+    defineField({
+      name: 'affipadAccounts',
+      title: 'Danh sách Tài khoản AffiPad (Pool Xoay Tua & Dự Phòng)',
+      description:
+        'Thêm các tài khoản AffiPad (mỗi tài khoản miễn phí 1.000 lượt/tháng). Hệ thống sẽ tự động xoay tua (Round-Robin) và tự động đổi tài khoản khi hết hạn mức (Auto-Failover).',
+      type: 'array',
+      hidden: ({ parent }) => parent?.enableAffipad === false,
+      of: [
+        {
+          type: 'object',
+          name: 'affipadAccountItem',
+          title: 'Tài khoản AffiPad',
+          fields: [
+            {
+              name: 'label',
+              title: 'Tên gợi nhớ tài khoản',
+              type: 'string',
+              description: 'Ví dụ: Tài khoản 1 (dat1@gmail.com)',
+              initialValue: 'Tài khoản AffiPad',
+              validation: (Rule: any) => Rule.required(),
+            },
+            {
+              name: 'apiKey',
+              title: 'API Key (Bearer Token)',
+              type: 'string',
+              description: 'Lấy tại https://my.affipad.com/settings (Mục API Keys)',
+              validation: (Rule: any) => Rule.required().min(10).error('Vui lòng nhập API Key hợp lệ'),
+            },
+            {
+              name: 'toolId',
+              title: 'Tool ID',
+              type: 'string',
+              description: 'Mã Tool ID lấy trong mục Tools của AffiPad (dạng clx1abc...)',
+              validation: (Rule: any) => Rule.required().error('Vui lòng nhập Tool ID'),
+            },
+            {
+              name: 'isActive',
+              title: 'Bật sử dụng tài khoản này',
+              type: 'boolean',
+              initialValue: true,
+            },
+          ],
+          preview: {
+            select: {
+              title: 'label',
+              toolId: 'toolId',
+              active: 'isActive',
+            },
+            prepare({ title, toolId, active }: any) {
+              const status = active !== false ? '🟢 [ĐANG BẬT]' : '⚪ [TẮT]';
+              return {
+                title: `${status} ${title || 'Tài khoản AffiPad'}`,
+                subtitle: toolId ? `Tool ID: ${toolId}` : 'Chưa nhập Tool ID',
+              };
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
+      name: 'affipadCacheTtlHours',
+      title: 'Thời gian lưu Cache link đã chuyển đổi (Giờ)',
+      description:
+        'Số giờ lưu lại link sản phẩm đã convert. Khách tiếp theo dán cùng sản phẩm sẽ nhận link ngay lập tức mà KHÔNG tốn quota của AffiPad (Mặc định: 12 giờ).',
+      type: 'number',
+      initialValue: 12,
+      hidden: ({ parent }) => parent?.enableAffipad === false,
+    }),
+    defineField({
       name: 'enableTelegramNotify',
       title: 'Bật thông báo lượt Click về Telegram',
       description: 'Gửi tin nhắn tức thời đến Telegram Bot mỗi khi người dùng click vào nút voucher mở App Shopee.',
