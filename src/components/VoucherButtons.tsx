@@ -66,23 +66,30 @@ export default function VoucherButtons({
       }
 
       try {
-        fetch('/api/notify-click', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            product: product || {
-              productName: productName || 'Sản phẩm Shopee',
-            },
-            voucher: {
-              voucherCode: voucher.voucherCode,
-              buttonLabel: voucher.buttonLabel,
-              channel: voucher.channel,
-              discountPercent: voucher.discountPercent,
-            },
-            targetUrl: url,
-          }),
-          keepalive: true,
-        }).catch(() => {});
+        const notifyPayload = JSON.stringify({
+          product: product || {
+            productName: productName || 'Sản phẩm Shopee',
+          },
+          voucher: {
+            voucherCode: voucher.voucherCode,
+            buttonLabel: voucher.buttonLabel,
+            channel: voucher.channel,
+            discountPercent: voucher.discountPercent,
+          },
+          targetUrl: url,
+        });
+
+        if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+          const blob = new Blob([notifyPayload], { type: 'application/json' });
+          navigator.sendBeacon('/api/notify-click', blob);
+        } else {
+          fetch('/api/notify-click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: notifyPayload,
+            keepalive: true,
+          }).catch(() => {});
+        }
       } catch {
         // Ignore background fetch error
       }

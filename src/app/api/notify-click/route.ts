@@ -105,14 +105,17 @@ export async function POST(req: NextRequest) {
       `🔗 ShopId/ItemId: ${shopItemIdFormatted}`,
     ].join('\n');
 
-    // Step 6: Dispatch message asynchronously in background
-    (async () => {
-      try {
-        await sendTelegramMessage(config.token!, config.chatId!, message);
-      } catch (sendErr) {
-        console.error('[Notify Click] Failed to dispatch Telegram message:', sendErr);
+    // Step 6: Dispatch message (await to ensure Vercel Lambda does not freeze before completion)
+    try {
+      const sendResult = await sendTelegramMessage(config.token!, config.chatId!, message);
+      if (!sendResult.success) {
+        console.error('[Notify Click] Telegram failed:', sendResult.error);
+        return NextResponse.json({ success: false, status: 'telegram_api_error', error: sendResult.error });
       }
-    })();
+    } catch (sendErr: any) {
+      console.error('[Notify Click] Failed to dispatch Telegram message:', sendErr);
+      return NextResponse.json({ success: false, status: 'dispatch_error', error: sendErr?.message });
+    }
 
     return NextResponse.json({ success: true, status: 'notified' });
   } catch (err: any) {
