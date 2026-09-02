@@ -16,7 +16,7 @@ export async function GET(_req: NextRequest) {
       minSpend,
       status,
       isActive,
-      isHighlighted,
+      badgeText,
       orderPriority
     }`;
 

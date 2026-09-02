@@ -115,7 +115,7 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
   };
 
   return (
-    <div className="w-full space-y-2.5">
+    <div id="convert-input-section" className="w-full space-y-2.5">
       {/* Friendly Notice Toast */}
       {notice && (
         <div className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-950/40 p-2.5 text-xs text-amber-200 backdrop-blur-md animate-fadeIn shadow-lg shadow-amber-950/30">
@@ -138,6 +138,7 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
           </div>
 
           <input
+            id="convert-input-field"
             ref={inputRef}
             type="text"
             value={url}

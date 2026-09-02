@@ -19,7 +19,26 @@ import {
 export default function AdminPage() {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRevalidating, setIsRevalidating] = useState(false);
+  const [revalidateMsg, setRevalidateMsg] = useState<string | null>(null);
   const router = useRouter();
+
+  const handleRevalidate = async () => {
+    setIsRevalidating(true);
+    try {
+      const res = await fetch('/api/revalidate');
+      const data = await res.json();
+      if (data.success) {
+        setRevalidateMsg('✅ Đã làm tươi Cache và cập nhật trang chủ thành công!');
+        fetchStats();
+        setTimeout(() => setRevalidateMsg(null), 3500);
+      }
+    } catch (err) {
+      console.error('Revalidate error:', err);
+    } finally {
+      setIsRevalidating(false);
+    }
+  };
 
   const fetchStats = useCallback(async () => {
     setIsLoading(true);
@@ -87,6 +106,15 @@ export default function AdminPage() {
               <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
               <span>{isLoading ? '...' : 'Làm mới'}</span>
             </button>
+            <button
+              onClick={handleRevalidate}
+              disabled={isRevalidating}
+              className="px-2.5 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 hover:text-white transition-colors flex items-center gap-1"
+              title="Xóa cache và làm mới trang chủ ngay lập tức"
+            >
+              <Sparkles className={`h-3 w-3 ${isRevalidating ? 'animate-spin' : 'text-amber-400'}`} />
+              <span>{isRevalidating ? 'Đang làm tươi...' : 'Làm tươi Cache (0s)'}</span>
+            </button>
             <Link
               href="/studio"
               className="px-2.5 py-1.5 rounded-lg bg-orange-600 text-xs font-semibold text-white hover:bg-orange-500 transition-colors flex items-center gap-1"
@@ -106,6 +134,11 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-3 sm:px-4 pt-4 space-y-4">
+        {revalidateMsg && (
+          <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-3 text-xs font-bold text-emerald-300 backdrop-blur-md animate-fadeIn shadow-lg">
+            {revalidateMsg}
+          </div>
+        )}
         {/* KPI Overview Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           <div className="rounded-xl border border-white/10 bg-[#111827] p-3 space-y-0.5">
@@ -263,10 +296,9 @@ export default function AdminPage() {
                               {v.voucherCode}
                             </span>
                           )}
-                          {v.isHighlighted && (
+                          {v.badgeText && (
                             <span className="inline-flex items-center gap-0.5 rounded bg-orange-500/20 border border-orange-500/30 px-1 py-0.5 text-[8px] font-bold text-orange-400">
-                              <Flame className="h-2 w-2" />
-                              HOT
+                              {v.badgeText}
                             </span>
                           )}
                         </div>

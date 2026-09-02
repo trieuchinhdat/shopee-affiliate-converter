@@ -27,10 +27,19 @@ export interface VoucherItem {
   discountPercent: number;
   maxDiscount?: number;
   minSpend?: number;
-  description: string;
+  customTitle?: string;
+  customMinSpendText?: string;
+  description?: string;
+  brandPreset?: 'facebook' | 'youtube' | 'shopee' | 'shopee_trendy' | 'shopee_live' | 'shopee_video' | 'zalo' | 'custom' | string;
+  brandLabel?: string;
+  customBrandLogoUrl?: string;
+  badgeType?: 'none' | 'flash_sale' | 'exclusive_outline' | 'custom_tag' | string;
+  badgeText?: string;
+  urgencyType?: 'running_out' | 'percent_used' | 'none' | 'custom' | string;
+  customUrgencyText?: string;
+  expiryText?: string;
   status: 'active' | 'expired' | 'incoming';
   isActive?: boolean;
-  isHighlighted?: boolean;
   orderPriority: number;
   usageProgress?: number;
   startTime?: string;
@@ -53,6 +62,17 @@ export interface ThemeConfig {
   bannerBadgeText?: string;
   heroTitle?: string;
   heroSubtitle?: string;
+  // Hero Banner Advanced Settings
+  showHeroBanner?: boolean;
+  heroBannerType?: 'compact_text' | 'fomo_ticker' | 'image_banner' | 'interactive_card';
+  heroHighlights?: string[];
+  heroTickerText?: string;
+  heroCardTag?: string;
+  heroBannerDesktopImageUrl?: string;
+  heroBannerMobileImageUrl?: string;
+  heroBannerAltText?: string;
+  bannerClickAction?: 'focus_input' | 'open_link';
+  heroBannerLink?: string;
   zaloGroupUrl?: string;
   // Zalo Community Card Settings
   showZaloCard?: boolean;

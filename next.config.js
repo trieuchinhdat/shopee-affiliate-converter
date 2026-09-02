@@ -12,6 +12,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '**.shopeemobile.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'cdn.sanity.io',
       },
     ],

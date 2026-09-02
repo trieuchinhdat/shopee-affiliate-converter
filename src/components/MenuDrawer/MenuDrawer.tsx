@@ -17,15 +17,29 @@ interface MenuDrawerProps {
 }
 
 export default function MenuDrawer({ isOpen, onClose, theme }: MenuDrawerProps) {
+  const [isRendered, setIsRendered] = useState(isOpen);
+  const [isVisible, setIsVisible] = useState(false);
   const [currentView, setCurrentView] = useState<DrawerView>('menu');
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const router = useRouter();
   const pathname = usePathname();
 
-  // Reset to main menu whenever drawer opens or closes
+  // Control open/close animation lifecycle
   useEffect(() => {
     if (isOpen) {
+      setIsRendered(true);
       setCurrentView('menu');
+      // Trigger slide-in transition on next animation frame
+      const frame = requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+      return () => cancelAnimationFrame(frame);
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => {
+        setIsRendered(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -89,25 +103,31 @@ export default function MenuDrawer({ isOpen, onClose, theme }: MenuDrawerProps) 
     }
   };
 
-  if (!isOpen) return null;
+  if (!isRendered) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden select-none">
-      {/* Dark Blur Backdrop */}
+      {/* Dark Blur Backdrop with smooth fade */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity duration-300 animate-fadeIn"
+        className={`fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity duration-300 ease-out ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
         aria-hidden="true"
       />
 
-      {/* Slide-over Drawer Panel */}
+      {/* Slide-over Drawer Panel from Right to Left */}
       <div
-        className="fixed inset-y-0 right-0 max-w-full flex pl-10"
+        className="fixed inset-y-0 right-0 max-w-full flex pl-10 pointer-events-none"
         role="dialog"
         aria-modal="true"
         aria-label="Menu Tiện Ích"
       >
-        <div className="w-screen max-w-sm sm:max-w-md bg-[#0f172a] border-l border-white/10 shadow-2xl flex flex-col transform-gpu transition-all duration-300 animate-fadeIn">
+        <div
+          className={`pointer-events-auto w-screen max-w-sm sm:max-w-md bg-[#0f172a] border-l border-white/10 shadow-2xl flex flex-col transform-gpu transition-transform duration-300 ease-out ${
+            isVisible ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
           {/* Drawer Header */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 bg-[#111827]/95">
             {currentView === 'menu' ? (

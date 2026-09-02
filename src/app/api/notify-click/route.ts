@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sanityClient } from '@/sanity/client';
-import { AppConfig, NotifyClickPayload } from '@/lib/types';
+import { getTelegramConfigCached } from '@/lib/sanityCache';
+import { NotifyClickPayload } from '@/lib/types';
 import {
   formatVietnamTime,
   parseDevice,
@@ -25,50 +25,6 @@ function cleanupStaleEntries() {
   });
 }
 
-async function getTelegramConfig(): Promise<{
-  enabled: boolean;
-  token?: string;
-  chatId?: string;
-  cooldownSeconds: number;
-}> {
-  let enabled = true;
-  let token = process.env.TELEGRAM_BOT_TOKEN || '';
-  let chatId = process.env.TELEGRAM_CHAT_ID || '';
-  let cooldownSeconds = 30;
-
-  try {
-    const config = await sanityClient.fetch<AppConfig>(
-      `*[_type == "appConfig"][0]{
-        enableTelegramNotify,
-        telegramBotToken,
-        telegramChatId,
-        telegramCooldownSeconds
-      }`,
-      {},
-      { cache: 'no-store' }
-    );
-
-    if (config) {
-      if (typeof config.enableTelegramNotify === 'boolean') {
-        enabled = config.enableTelegramNotify;
-      }
-      if (config.telegramBotToken && config.telegramBotToken.trim()) {
-        token = config.telegramBotToken.trim();
-      }
-      if (config.telegramChatId && config.telegramChatId.trim()) {
-        chatId = config.telegramChatId.trim();
-      }
-      if (typeof config.telegramCooldownSeconds === 'number' && config.telegramCooldownSeconds > 0) {
-        cooldownSeconds = config.telegramCooldownSeconds;
-      }
-    }
-  } catch (err) {
-    console.error('[Notify Click] Error fetching Sanity config, using env fallback:', err);
-  }
-
-  return { enabled, token, chatId, cooldownSeconds };
-}
-
 export async function POST(req: NextRequest) {
   try {
     const userAgent = req.headers.get('user-agent') || '';
@@ -78,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, status: 'bot_ignored' });
     }
 
-    const config = await getTelegramConfig();
+    const config = await getTelegramConfigCached(120);
 
     // Step 2: Check if Telegram notification is enabled and configured
     if (!config.enabled) {

@@ -66,7 +66,7 @@ export default function Header({ theme }: HeaderProps) {
             <button
               type="button"
               onClick={() => setIsMenuOpen(true)}
-              className="relative flex h-9.5 w-9.5 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-white/10 bg-surface text-slate-200 transition-all hover:border-orange-500/50 hover:text-white hover:bg-white/5 active:scale-95 shadow-sm group"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-surface text-slate-200 transition-all hover:border-orange-500/50 hover:text-white hover:bg-white/5 active:scale-95 shadow-sm group p-2.5"
               title="Mở Menu Tiện Ích"
               aria-label="Mở Menu Tiện Ích"
               aria-expanded={isMenuOpen}

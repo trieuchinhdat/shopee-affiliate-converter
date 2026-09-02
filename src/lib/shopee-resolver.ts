@@ -140,6 +140,58 @@ export function isValidShopeeUrl(url: string): boolean {
 }
 
 /**
+ * Extracts high quality Shopee product image URL from HTML string or metadata
+ */
+export function extractShopeeImage(html: string): string | null {
+  if (!html) return null;
+
+  // 1. Check meta og:image tag (filter out default favicons and generic placeholders)
+  const ogMatch =
+    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+
+  if (
+    ogMatch &&
+    ogMatch[1] &&
+    ogMatch[1].startsWith('http') &&
+    !ogMatch[1].includes('ca5a0de24786de9f846143b5b8050e74') &&
+    !ogMatch[1].includes('icon_favicon') &&
+    !ogMatch[1].includes('favicon')
+  ) {
+    return ogMatch[1];
+  }
+
+  // 2. Extract susercontent CDN product image hashes
+  const suserMatches = Array.from(
+    html.matchAll(
+      /https?:\/\/(?:cf|down-vn|down-ws-vn|down-zl-vn|down-tx-vn|down-bs-vn)\.img\.susercontent\.com\/file\/([a-zA-Z0-9_-]+)/gi
+    )
+  );
+  for (const m of suserMatches) {
+    const hash = m[1];
+    if (hash && (hash.length === 32 || hash.startsWith('vn-') || hash.startsWith('sg-'))) {
+      if (!hash.includes('icon') && !hash.includes('avatar') && !hash.includes('resize_w16') && !hash.includes('resize_w32')) {
+        return `https://down-vn.img.susercontent.com/file/${hash}`;
+      }
+    }
+  }
+
+  // 3. Extract JSON image field: "image":"xxx"
+  const rawHashMatch = html.match(/"image":\s*"([a-zA-Z0-9_-]{32}|(?:vn|sg)-[a-zA-Z0-9_-]{15,45})"/i);
+  if (rawHashMatch && rawHashMatch[1]) {
+    return `https://down-vn.img.susercontent.com/file/${rawHashMatch[1]}`;
+  }
+
+  // 4. Extract first image from JSON "images":["hash1", "hash2"]
+  const imagesArrayMatch = html.match(/"images":\s*\[\s*"([a-zA-Z0-9_-]{32}|(?:vn|sg)-[a-zA-Z0-9_-]{15,45})"/i);
+  if (imagesArrayMatch && imagesArrayMatch[1]) {
+    return `https://down-vn.img.susercontent.com/file/${imagesArrayMatch[1]}`;
+  }
+
+  return null;
+}
+
+/**
  * Resolves any Shopee link (direct, shortlink, universal link, or shared message) to full product info
  */
 export async function resolveShopeeProduct(rawUrl: string): Promise<ShopeeProduct> {
@@ -148,6 +200,8 @@ export async function resolveShopeeProduct(rawUrl: string): Promise<ShopeeProduc
 
   // Check if title is in slug of initial URL
   let slugTitle = extractTitleFromSlug(targetUrl);
+  let discoveredImage: string | null = null;
+  let discoveredTitle: string | null = null;
 
   // 1. Fast path: Check if IDs are already in the input URL
   let ids = extractShopeeIds(targetUrl);
@@ -171,8 +225,8 @@ export async function resolveShopeeProduct(rawUrl: string): Promise<ShopeeProduc
           method: 'GET',
           headers: {
             'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
           },
           redirect: 'manual',
@@ -199,6 +253,9 @@ export async function resolveShopeeProduct(rawUrl: string): Promise<ShopeeProduc
         }
 
         const bodyHtml = await res.text();
+        const imgInBody = extractShopeeImage(bodyHtml);
+        if (imgInBody) discoveredImage = imgInBody;
+
         const bodyIds = extractShopeeIds(bodyHtml);
         if (bodyIds) {
           ids = bodyIds;
@@ -239,8 +296,11 @@ export async function resolveShopeeProduct(rawUrl: string): Promise<ShopeeProduc
           }
         }
 
+        const botHtml = await botRes.text();
+        const imgInBot = extractShopeeImage(botHtml);
+        if (imgInBot) discoveredImage = imgInBot;
+
         if (!ids) {
-          const botHtml = await botRes.text();
           const htmlIds = extractShopeeIds(botHtml);
           if (htmlIds) {
             ids = htmlIds;
@@ -265,24 +325,31 @@ export async function resolveShopeeProduct(rawUrl: string): Promise<ShopeeProduc
     return cached.data;
   }
 
-  // 3. Scrape Product OpenGraph Metadata & Details
-  let productName = slugTitle || `Sản phẩm Shopee`;
-  let imageUrl = 'https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/ca5a0de24786de9f846143b5b8050e74.png';
+  // 3. Scrape Product Details & High Quality Image
+  let productName = slugTitle || discoveredTitle || `Sản phẩm Shopee`;
+  let imageUrl = discoveredImage || 'https://down-vn.img.susercontent.com/file/d4bbea4570b93bfd5fc652ca82a262a8';
   let price: number | undefined = undefined;
 
-  // Fetch OpenGraph HTML from canonical product page
+  // Fetch product page to extract rich image and details
   try {
     const metaPageUrl = `https://shopee.vn/product/${shopId}/${itemId}`;
     const metaRes = await fetch(metaPageUrl, {
       headers: {
-        'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
         'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8',
       },
     });
 
     if (metaRes.ok) {
       const html = await metaRes.text();
+
+      // Extract image using comprehensive scanner
+      const pageImage = extractShopeeImage(html);
+      if (pageImage) {
+        imageUrl = pageImage;
+      }
 
       // Extract title
       const titleMatch =
@@ -298,21 +365,16 @@ export async function resolveShopeeProduct(rawUrl: string): Promise<ShopeeProduc
           .replace(/\s*\|\s*Shopee/gi, '')
           .trim();
 
-        if (cleanedTitle.length > 2 && !/^(Shopee|Trang chủ)$/i.test(cleanedTitle)) {
+        if (
+          cleanedTitle.length > 2 &&
+          !/^(Shopee|Trang chủ)$/i.test(cleanedTitle) &&
+          !cleanedTitle.includes('Mua và Bán Trên Ứng Dụng')
+        ) {
           productName = cleanedTitle;
         }
       }
 
-      // Extract image
-      const imageMatch =
-        html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
-        html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-
-      if (imageMatch && imageMatch[1] && imageMatch[1].startsWith('http')) {
-        imageUrl = imageMatch[1];
-      }
-
-      // Extract price from description
+      // Extract price from description or JSON
       const descMatch =
         html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) ||
         html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i);
