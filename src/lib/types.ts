@@ -11,6 +11,7 @@ export interface ShopeeProduct {
 
 export interface UniversalLinks {
   facebook: {
+    fb25?: string;
     fb22: string;
     fb20: string;
   };
@@ -23,7 +24,7 @@ export interface VoucherItem {
   _id: string;
   voucherCode: string;
   buttonLabel: string;
-  channel: 'fb_22' | 'fb_20' | 'ytb' | 'ig' | 'zalo' | 'all';
+  channel: 'fb_25' | 'fb_22' | 'fb_20' | 'ytb' | 'ig' | 'zalo' | 'all';
   discountPercent: number;
   maxDiscount?: number;
   minSpend?: number;

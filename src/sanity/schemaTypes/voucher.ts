@@ -45,6 +45,7 @@ export const voucher = defineType({
       type: 'string',
       options: {
         list: [
+          { title: 'Facebook 25% (Mã FB 25)', value: 'fb_25' },
           { title: 'Facebook 22% (Mã FB 22)', value: 'fb_22' },
           { title: 'Facebook 20% (Mã FB 20)', value: 'fb_20' },
           { title: 'YouTube (Mã YouTube 20)', value: 'ytb' },

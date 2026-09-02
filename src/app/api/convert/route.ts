@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveShopeeProduct, isValidShopeeUrl, extractShopeeUrl, extractShopeeIds } from '@/lib/shopee-resolver';
-import { generateAllUniversalLinks, parseFacebookPayload, DEFAULT_FB_PAYLOAD } from '@/lib/universal-link';
+import { generateAllUniversalLinks, resolveAndExtractFacebookPayload, DEFAULT_FB_PAYLOAD } from '@/lib/universal-link';
 import { getAppConfigCached, getActiveVouchersCached } from '@/lib/sanityCache';
 import { ConvertResult } from '@/lib/types';
 
@@ -39,11 +39,18 @@ export async function POST(req: NextRequest) {
       );
 
       if (activeUrls.length > 0) {
-        const randomIndex = Math.floor(Math.random() * activeUrls.length);
-        const chosen = activeUrls[randomIndex];
-        const parsed = parseFacebookPayload(chosen.url);
-        if (parsed) {
-          selectedFbPayload = parsed;
+        // Shuffle active URLs to rotate tokens, and pick the first one that resolves successfully
+        const shuffled = [...activeUrls].sort(() => Math.random() - 0.5);
+        for (const item of shuffled) {
+          try {
+            const parsed = await resolveAndExtractFacebookPayload(item.url);
+            if (parsed) {
+              selectedFbPayload = parsed;
+              break;
+            }
+          } catch (err) {
+            console.error('[API Convert] Error resolving FB sample item:', err);
+          }
         }
       }
     }

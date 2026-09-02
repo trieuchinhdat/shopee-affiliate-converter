@@ -39,9 +39,9 @@ export const appConfig = defineType({
     }),
     defineField({
       name: 'facebookSampleUrls',
-      title: 'Danh sách Link Facebook Mẫu (Pool Token FB)',
+      title: 'Danh sách Link Facebook Mẫu (Pool Token FB Sống)',
       description:
-        'Nhập các đường link Shopee lấy từ Facebook (tối đa 10 link). Hệ thống sẽ tự động bóc tách Token và chọn ngẫu nhiên để gắn Tag FB cho khách.',
+        'Nhập các đường link Shopee lấy từ Facebook Reels / Bài post (chấp nhận cả link rút gọn s.shopee.vn, vn.shp.ee hoặc link dài). Hệ thống sẽ tự động giải mã lấy Token bảo mật mới nhất và xoay tua áp mã Facebook cho khách.',
       type: 'array',
       of: [
         {
@@ -51,18 +51,15 @@ export const appConfig = defineType({
           fields: [
             {
               name: 'url',
-              title: 'Đường link Facebook đầy đủ (chứa encrypted_payload)',
+              title: 'Đường link Shopee từ Facebook (s.shopee.vn, vn.shp.ee hoặc shopee.vn)',
               type: 'text',
               rows: 3,
               validation: (Rule: any) =>
                 Rule.required()
                   .custom((url: string) => {
                     if (!url) return 'Vui lòng nhập link';
-                    if (!url.includes('shopee.vn') && !url.includes('shp.ee')) {
-                      return 'Link phải là link Shopee';
-                    }
-                    if (!url.includes('encrypted_payload')) {
-                      return 'Cảnh báo: Link này chưa có tham số encrypted_payload của Facebook';
+                    if (!url.includes('shopee.vn') && !url.includes('shp.ee') && !url.includes('shope.ee')) {
+                      return 'Link phải là link Shopee (shopee.vn, s.shopee.vn, vn.shp.ee)';
                     }
                     return true;
                   }),

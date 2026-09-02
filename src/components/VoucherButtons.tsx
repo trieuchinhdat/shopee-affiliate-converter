@@ -21,6 +21,8 @@ export default function VoucherButtons({
 
   const getChannelUrl = (channel: string) => {
     switch (channel) {
+      case 'fb_25':
+        return links.facebook.fb25 || links.facebook.fb22;
       case 'fb_22':
         return links.facebook.fb22;
       case 'fb_20':
@@ -84,7 +86,8 @@ export default function VoucherButtons({
       }
     }
 
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // Open target link without noreferrer so Shopee can track the social referrer context
+    window.open(url, '_blank', 'noopener');
   };
 
   const handleCopy = (code: string, e: React.MouseEvent) => {
@@ -164,7 +167,7 @@ export default function VoucherButtons({
       case 'custom':
         return '';
       default:
-        if (voucher.channel === 'fb_22' || voucher.channel === 'fb_20') return 'FACEBOOK';
+        if (voucher.channel === 'fb_25' || voucher.channel === 'fb_22' || voucher.channel === 'fb_20') return 'FACEBOOK';
         if (voucher.channel === 'ytb') return 'YouTube';
         return 'SHOPEE';
     }
@@ -185,7 +188,7 @@ export default function VoucherButtons({
       return null;
     }
 
-    const preset = voucher.brandPreset || (voucher.channel === 'fb_22' || voucher.channel === 'fb_20' ? 'facebook' : voucher.channel === 'ytb' ? 'youtube' : 'shopee');
+    const preset = voucher.brandPreset || (voucher.channel === 'fb_25' || voucher.channel === 'fb_22' || voucher.channel === 'fb_20' ? 'facebook' : voucher.channel === 'ytb' ? 'youtube' : 'shopee');
 
     switch (preset) {
       case 'facebook':
