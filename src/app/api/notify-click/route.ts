@@ -95,25 +95,8 @@ export async function POST(req: NextRequest) {
         ? `https://shopee.vn/product/${product.shopId}/${product.itemId}`
         : product.canonicalUrl || product.originalUrl || 'https://shopee.vn';
 
-    // Format Price & Estimated Savings
-    let priceText = 'Đang cập nhật';
-    const rawPrice = product.price;
-    const discountPercent = voucher.discountPercent || 0;
-
-    if (typeof rawPrice === 'number' && rawPrice > 0) {
-      const formattedPrice = product.formattedPrice || `${new Intl.NumberFormat('vi-VN').format(rawPrice)}đ`;
-      if (discountPercent > 0) {
-        const estimatedSavings = Math.min(Math.round((rawPrice * discountPercent) / 100), 2000000);
-        const savingsFormatted = `${new Intl.NumberFormat('vi-VN').format(estimatedSavings)}đ`;
-        priceText = `${formattedPrice} <i>(Giảm ~${savingsFormatted})</i>`;
-      } else {
-        priceText = formattedPrice;
-      }
-    } else if (product.formattedPrice) {
-      priceText = product.formattedPrice;
-    }
-
     // Format Voucher text: METAPARSEP2201 (-22% FB)
+    const discountPercent = voucher.discountPercent || 0;
     const rawVoucherCode = voucher.voucherCode || voucher.buttonLabel || 'Ưu đãi Shopee';
     const channelRaw = voucher.channel || '';
     const channelTag = channelRaw.startsWith('fb')
@@ -127,13 +110,12 @@ export async function POST(req: NextRequest) {
       : '';
     const discountTag = discountPercent > 0 ? ` (-${discountPercent}%${channelTag})` : '';
 
-    // Step 5: Format Telegram Message in HTML mode
+    // Step 5: Format Telegram Message in HTML mode (Minimalist layout without emoji icons)
     const message = [
-      '🔔 <b>[Shopee Affiliate] Lượt Click Mới!</b>',
-      `⏱️ ${timeFormatted}`,
       '━━━━━━━━━━━━━━━━━━',
-      `🛍️ <b>Sản phẩm:</b> <a href="${productShopeeUrl}">${escapeHtml(truncatedTitle)}</a>`,
-      `<b>Giá bán:</b> ${priceText}`,
+      '<b>[Shopee Affiliate] Lượt Click Mới!</b>',
+      timeFormatted,
+      `<b>Sản phẩm:</b> <a href="${productShopeeUrl}">${escapeHtml(truncatedTitle)}</a>`,
       `<b>Voucher:</b> <code>${escapeHtml(rawVoucherCode)}</code>${discountTag}`,
       `<b>Thiết bị:</b> ${escapeHtml(deviceFormatted)} · ${escapeHtml(locationFormatted)} (<code>${maskedIp}</code>)`,
       '━━━━━━━━━━━━━━━━━━',
