@@ -1,34 +1,50 @@
 import { defineType, defineField } from 'sanity';
+import {
+  ControlsIcon,
+  ColorWheelIcon,
+  ImagesIcon,
+  DashboardIcon,
+  DesktopIcon,
+  CommentIcon,
+  SearchIcon,
+} from '@sanity/icons';
 
 export const themeConfig = defineType({
   name: 'themeConfig',
   title: 'Cài đặt giao diện',
   type: 'document',
+  icon: ControlsIcon,
   groups: [
     {
       name: 'branding',
-      title: '🎨 Logo & Nền Trang',
+      title: 'Logo & Nền Trang',
+      icon: ColorWheelIcon,
       default: true,
     },
     {
       name: 'banner',
-      title: '🖼️ Slide Banner Quảng Cáo',
+      title: 'Slide Banner Quảng Cáo',
+      icon: ImagesIcon,
     },
     {
       name: 'home_sections',
-      title: '⚡ Tiện Ích Trang Chủ & Lưu Ý',
+      title: 'Tiện Ích Trang Chủ & Lưu Ý',
+      icon: DashboardIcon,
     },
     {
       name: 'desktop_restriction',
-      title: '💻 Chặn Desktop & Mã QR',
+      title: 'Chặn Desktop & Mã QR',
+      icon: DesktopIcon,
     },
     {
       name: 'zalo_widget',
-      title: '💬 Nhóm Zalo & Chatbox',
+      title: 'Nhóm Zalo & Chatbox',
+      icon: CommentIcon,
     },
     {
       name: 'seo',
-      title: '🔍 Cấu hình SEO Meta',
+      title: 'Cấu hình SEO Meta',
+      icon: SearchIcon,
     },
   ],
   fields: [
@@ -40,8 +56,8 @@ export const themeConfig = defineType({
       group: 'branding',
       options: {
         list: [
-          { title: '📝 Chữ (Text Logo)', value: 'text' },
-          { title: '🖼️ Hình ảnh (Image Logo)', value: 'image' },
+          { title: 'Chữ (Text Logo)', value: 'text' },
+          { title: 'Hình ảnh (Image Logo)', value: 'image' },
         ],
         layout: 'radio',
       },
@@ -97,9 +113,9 @@ export const themeConfig = defineType({
       group: 'branding',
       options: {
         list: [
-          { title: '🎨 Màu đơn sắc (Solid Color)', value: 'solid' },
-          { title: '🌈 Màu chuyển sắc (Gradient)', value: 'gradient' },
-          { title: '🖼️ Hình nền ảnh (Background Image)', value: 'image' },
+          { title: 'Màu đơn sắc (Solid Color)', value: 'solid' },
+          { title: 'Màu chuyển sắc (Gradient)', value: 'gradient' },
+          { title: 'Hình nền ảnh (Background Image)', value: 'image' },
         ],
         layout: 'radio',
       },
@@ -201,7 +217,7 @@ export const themeConfig = defineType({
             }),
             defineField({
               name: 'image',
-              title: '🖼️ Hình ảnh Banner (Dùng chung Desktop & Mobile)',
+              title: 'Hình ảnh Banner (Dùng chung Desktop & Mobile)',
               description: 'Tải lên 1 hình ảnh dùng chung cho cả Máy tính & Điện thoại. Chuẩn kích thước tỉ lệ 10:3 (1200x360px hoặc 900x270px) để hiển thị trọn vẹn 100% không bị cắt.',
               type: 'image',
               options: {
@@ -211,7 +227,7 @@ export const themeConfig = defineType({
             }),
             defineField({
               name: 'linkUrl',
-              title: '🔗 Đường dẫn liên kết (Target Link Điều Hướng)',
+              title: 'Đường dẫn liên kết (Target Link Điều Hướng)',
               description: 'Link Affiliate Shopee, Link Mega Sale, hoặc Link Nhóm Zalo để nhận hoa hồng gián tiếp.',
               type: 'url',
             }),
@@ -238,10 +254,10 @@ export const themeConfig = defineType({
               isActive: 'isActive',
             },
             prepare({ title, linkUrl, media, desktopMedia, isActive }) {
-              const statusText = isActive === false ? '⛔ Đang tắt' : '🟢 Đang hoạt động';
+              const statusText = isActive === false ? 'Đang tắt' : 'Đang hoạt động';
               return {
                 title: `${title || 'Chưa đặt tên'} (${statusText})`,
-                subtitle: linkUrl ? `🔗 ${linkUrl}` : '⚠️ Chưa gắn link điều hướng',
+                subtitle: linkUrl ? linkUrl : 'Chưa gắn link điều hướng',
                 media: media || desktopMedia,
               };
             },
@@ -253,7 +269,7 @@ export const themeConfig = defineType({
     // --- 4. CÁC TIỆN ÍCH TRÊN TRANG CHỦ & LƯU Ý VOUCHER ---
     defineField({
       name: 'voucherNoticeText',
-      title: '⚠️ Đoạn Lưu ý cố định dưới danh sách Voucher',
+      title: 'Đoạn Lưu ý cố định dưới danh sách Voucher',
       description: 'Nội dung hướng dẫn / xử lý sự cố hiển thị trong khung viền vàng nổi bật dưới các nút voucher',
       type: 'text',
       group: 'home_sections',
@@ -262,7 +278,7 @@ export const themeConfig = defineType({
     }),
     defineField({
       name: 'showSocialProofTicker',
-      title: '🟢 Bật Dải tin Ticker (Khách vừa nhận mã)',
+      title: 'Bật Dải tin Ticker (Khách vừa nhận mã)',
       description: 'Dải thông báo nhỏ nhấp nháy đèn xanh chạy dưới nút Dán & Lấy Mã',
       type: 'boolean',
       group: 'home_sections',
@@ -270,7 +286,7 @@ export const themeConfig = defineType({
     }),
     defineField({
       name: 'socialProofMessages',
-      title: '📝 Danh sách thông báo Ticker (Khách vừa nhận mã)',
+      title: 'Danh sách thông báo Ticker (Khách vừa nhận mã)',
       description: 'Nhập các dòng thông báo thay phiên nhau chạy. Bấm "Add item" để thêm dòng mới, kéo thả để đổi thứ tự.',
       type: 'array',
       group: 'home_sections',
@@ -285,26 +301,50 @@ export const themeConfig = defineType({
       hidden: ({ parent }) => parent?.showSocialProofTicker === false,
     }),
     defineField({
-      name: 'showVouchersTeaser',
-      title: '🔥 Bật Bảng Mã Hot Đang Phát (Trang chủ)',
-      description: 'Thẻ hiển thị các mã hot (FB 22%, YouTube 20%...) khi người dùng chưa dán link',
+      name: 'showQuickGuide',
+      title: 'Bật Thanh 3 Bước Săn Mã Nhanh (1 dòng)',
+      description: 'Thanh hướng dẫn tinh gọn: 1. Copy link -> 2. Bấm Dán -> 3. Nhận mã',
       type: 'boolean',
       group: 'home_sections',
       initialValue: true,
     }),
     defineField({
-      name: 'showQuickGuide',
-      title: '⚡ Bật Thanh 3 Bước Săn Mã Nhanh (1 dòng)',
-      description: 'Thanh hướng dẫn tinh gọn: 1. Copy link ➔ 2. Bấm Dán ➔ 3. Nhận mã',
+      name: 'showSuggestedVouchers',
+      title: 'Bật Khối Gợi Ý Voucher Hot',
+      description: 'Bật / Tắt khối hiển thị các vé voucher hot gợi ý trên trang chủ',
       type: 'boolean',
       group: 'home_sections',
       initialValue: true,
+    }),
+    defineField({
+      name: 'suggestedVouchersTitle',
+      title: 'Tiêu đề Khối Gợi Ý Voucher Hot',
+      type: 'string',
+      group: 'home_sections',
+      initialValue: 'Gợi Ý Voucher Hot Hôm Nay',
+      hidden: ({ parent }) => parent?.showSuggestedVouchers === false,
+    }),
+    defineField({
+      name: 'suggestedVouchersLayout',
+      title: 'Kiểu Bố Cục Hiển Thị (Layout)',
+      description: 'Chọn kiểu hiển thị Trượt ngang (Slide / Carousel) hoặc Dạng lưới (Grid)',
+      type: 'string',
+      group: 'home_sections',
+      options: {
+        list: [
+          { title: 'Trượt ngang (Slide / Carousel)', value: 'slide' },
+          { title: 'Dạng lưới (Grid)', value: 'grid' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'slide',
+      hidden: ({ parent }) => parent?.showSuggestedVouchers === false,
     }),
 
     // --- CÀI ĐẶT CHẶN DESKTOP & MODAL QR ---
     defineField({
       name: 'blockDesktopConvert',
-      title: '🚫 Bật Chặn dán & Chuyển đổi link trên Desktop',
+      title: 'Bật Chặn dán & Chuyển đổi link trên Desktop',
       description: 'Khi bật: Người dùng máy tính sẽ không thể dán link trực tiếp mà được hướng dẫn quét mã QR bằng điện thoại để mở App Shopee nhận mã giảm giá tối ưu.',
       type: 'boolean',
       group: 'desktop_restriction',
@@ -391,7 +431,7 @@ export const themeConfig = defineType({
       title: 'Nội dung bong bóng Chatbox Zalo',
       type: 'string',
       group: 'zalo_widget',
-      initialValue: 'Nhận mã 22% & mã Live sớm nhất! 💬',
+      initialValue: 'Nhận mã 22% & mã Live sớm nhất!',
       hidden: ({ parent }) => parent?.showFloatingZalo === false,
     }),
 

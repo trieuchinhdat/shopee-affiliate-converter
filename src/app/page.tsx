@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getThemeConfig } from '@/lib/themeServer';
+import { getSuggestedVouchersCached } from '@/lib/sanityCache';
 import HomeClient from '@/components/HomeClient';
 
 export const revalidate = 60;
@@ -83,7 +84,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const theme = await getThemeConfig();
+  const [theme, suggestedVouchers] = await Promise.all([
+    getThemeConfig(),
+    getSuggestedVouchersCached(60),
+  ]);
 
   const siteUrl = theme.canonicalUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://sanmakhuyenmai.vn';
   const appTitle =
@@ -157,7 +161,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <HomeClient initialTheme={theme} />
+      <HomeClient initialTheme={theme} initialSuggestedVouchers={suggestedVouchers} />
     </>
   );
 }

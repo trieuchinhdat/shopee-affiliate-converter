@@ -7,28 +7,36 @@ import ConvertInput from '@/components/ConvertInput';
 import ProductCard from '@/components/ProductCard';
 import VoucherButtons from '@/components/VoucherButtons';
 import SocialProofTicker from '@/components/SocialProofTicker';
-import HomeVouchersTeaser from '@/components/HomeVouchersTeaser';
 import QuickGuideSteps from '@/components/QuickGuideSteps';
 import ZaloCommunityCard from '@/components/ZaloCommunityCard';
 import FloatingZaloWidget from '@/components/FloatingZaloWidget';
 import Footer from '@/components/Footer';
-import { ConvertResult, ThemeConfig } from '@/lib/types';
+import SuggestedVouchers from '@/components/SuggestedVouchers';
+import { ConvertResult, ThemeConfig, SuggestedVoucherItem } from '@/lib/types';
 
 interface HomeClientProps {
   initialTheme: ThemeConfig;
+  initialSuggestedVouchers?: SuggestedVoucherItem[];
 }
 
-export default function HomeClient({ initialTheme }: HomeClientProps) {
+export default function HomeClient({ initialTheme, initialSuggestedVouchers = [] }: HomeClientProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [theme, setTheme] = useState<ThemeConfig>(initialTheme);
+  const [suggestedVouchers, setSuggestedVouchers] = useState<SuggestedVoucherItem[]>(initialSuggestedVouchers);
 
   useEffect(() => {
     if (initialTheme) {
       setTheme(initialTheme);
     }
   }, [initialTheme]);
+
+  useEffect(() => {
+    if (initialSuggestedVouchers) {
+      setSuggestedVouchers(initialSuggestedVouchers);
+    }
+  }, [initialSuggestedVouchers]);
 
   const handleConvert = async (url: string) => {
     setIsLoading(true);
@@ -120,10 +128,9 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
             </div>
           )}
 
-          {/* When NO result yet: Render High-Converting Teaser & Quick Guide (Controlled by Sanity Theme) */}
+          {/* When NO result yet: Render Quick Guide (Controlled by Sanity Theme) */}
           {!result && (
             <div className="space-y-2.5 pt-0.5 animate-fadeIn">
-              {theme?.showVouchersTeaser !== false && <HomeVouchersTeaser />}
               {theme?.showQuickGuide !== false && <QuickGuideSteps />}
             </div>
           )}
@@ -144,6 +151,14 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
               />
             </div>
           )}
+
+          {/* Suggested Vouchers Hot Block (Controlled by Sanity with slide/grid layout) */}
+          <SuggestedVouchers
+            vouchers={suggestedVouchers}
+            layout={theme?.suggestedVouchersLayout || 'slide'}
+            title={theme?.suggestedVouchersTitle}
+            show={theme?.showSuggestedVouchers !== false}
+          />
 
           {/* Zalo Support Community Card with Sanity Dynamic Controls */}
           <ZaloCommunityCard

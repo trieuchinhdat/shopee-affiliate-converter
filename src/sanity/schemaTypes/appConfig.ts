@@ -1,26 +1,32 @@
 import { defineType, defineField } from 'sanity';
+import { CogIcon, BoltIcon, LinkIcon, CommentIcon } from '@sanity/icons';
 
 export const appConfig = defineType({
   name: 'appConfig',
   title: 'Cài đặt hệ thống',
   type: 'document',
+  icon: CogIcon,
   groups: [
     {
       name: 'general',
-      title: '⚙️ Cài đặt chung',
+      title: 'Cài đặt chung',
+      icon: CogIcon,
       default: true,
     },
     {
       name: 'affipad',
-      title: '⚡ AffiPad Multi-Account Pool',
+      title: 'AffiPad Multi-Account Pool',
+      icon: BoltIcon,
     },
     {
       name: 'facebook_sample',
-      title: '📱 Link Facebook Mẫu',
+      title: 'Link Facebook Mẫu',
+      icon: LinkIcon,
     },
     {
       name: 'telegram',
-      title: '🤖 Thông báo Telegram',
+      title: 'Thông báo Telegram',
+      icon: CommentIcon,
     },
   ],
   fields: [
@@ -63,7 +69,7 @@ export const appConfig = defineType({
     }),
     defineField({
       name: 'enableAffipad',
-      title: '⚡ Bật hệ thống AffiPad Multi-Account (Tự động sinh link 100% hiện mã)',
+      title: 'Bật hệ thống AffiPad Multi-Account (Tự động sinh link 100% hiện mã)',
       description:
         'Sử dụng API AffiPad để tự động tạo link Shopee có chứa credential_token riêng cho từng sản phẩm. Giúp 100% người dùng khi bấm mở App Shopee đều nhận được mã giảm giá.',
       type: 'boolean',
@@ -120,7 +126,7 @@ export const appConfig = defineType({
               active: 'isActive',
             },
             prepare({ title, toolId, active }: any) {
-              const status = active !== false ? '🟢 [ĐANG BẬT]' : '⚪ [TẮT]';
+              const status = active !== false ? '[ĐANG BẬT]' : '[TẮT]';
               return {
                 title: `${status} ${title || 'Tài khoản AffiPad'}`,
                 subtitle: toolId ? `Tool ID: ${toolId}` : 'Chưa nhập Tool ID',
@@ -189,7 +195,7 @@ export const appConfig = defineType({
               active: 'isActive',
             },
             prepare({ title, url, active }: any) {
-              const status = active !== false ? '🟢 [ĐANG BẬT]' : '⚪ [TẮT]';
+              const status = active !== false ? '[ĐANG BẬT]' : '[TẮT]';
               return {
                 title: `${status} ${title || 'Link FB'}`,
                 subtitle: url ? `${url.substring(0, 60)}...` : 'Chưa có link',

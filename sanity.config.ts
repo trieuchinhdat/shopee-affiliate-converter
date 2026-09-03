@@ -1,6 +1,7 @@
 import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { visionTool } from '@sanity/vision';
+import { CogIcon, ControlsIcon, TagIcon, SparklesIcon, UsersIcon } from '@sanity/icons';
 import { schemaTypes } from './src/sanity/schemaTypes';
 
 export default defineConfig({
@@ -19,8 +20,9 @@ export default defineConfig({
           .items([
             // Singleton: Cài đặt hệ thống
             S.listItem()
-              .title('⚙️ Cài đặt hệ thống')
+              .title('Cài đặt hệ thống')
               .id('appConfig')
+              .icon(CogIcon)
               .child(
                 S.document()
                   .schemaType('appConfig')
@@ -30,8 +32,9 @@ export default defineConfig({
 
             // Singleton: Cài đặt giao diện & SEO
             S.listItem()
-              .title('🎨 Cài đặt giao diện & SEO')
+              .title('Cài đặt giao diện & SEO')
               .id('themeConfig')
+              .icon(ControlsIcon)
               .child(
                 S.document()
                   .schemaType('themeConfig')
@@ -42,8 +45,9 @@ export default defineConfig({
             S.divider(),
 
             // Collections
-            S.documentTypeListItem('voucher').title('🎟️ Quản lý voucher'),
-            S.documentTypeListItem('adminUser').title('👤 Quản lý user'),
+            S.documentTypeListItem('voucher').title('Quản lý voucher').icon(TagIcon),
+            S.documentTypeListItem('suggestedVoucher').title('Gợi ý voucher hot').icon(SparklesIcon),
+            S.documentTypeListItem('adminUser').title('Quản lý người dùng').icon(UsersIcon),
           ]),
     }),
     visionTool(),

@@ -1,9 +1,11 @@
 import { defineType, defineField } from 'sanity';
+import { TagIcon } from '@sanity/icons';
 
 export const voucher = defineType({
   name: 'voucher',
   title: 'Quản lý voucher',
   type: 'document',
+  icon: TagIcon,
   groups: [
     { name: 'general', title: '1. Thông tin chung', default: true },
     { name: 'discount', title: '2. Giá trị giảm giá' },
@@ -64,9 +66,9 @@ export const voucher = defineType({
       type: 'string',
       options: {
         list: [
-          { title: '🟢 Đang mở (Active)', value: 'active' },
-          { title: '🔴 Hết mã (Expired)', value: 'expired' },
-          { title: '🟡 Sắp mở (Incoming)', value: 'incoming' },
+          { title: 'Đang mở (Active)', value: 'active' },
+          { title: 'Hết mã (Expired)', value: 'expired' },
+          { title: 'Sắp mở (Incoming)', value: 'incoming' },
         ],
         layout: 'radio',
       },
@@ -96,28 +98,28 @@ export const voucher = defineType({
     defineField({
       name: 'maxDiscount',
       title: 'Giảm tối đa (VNĐ)',
-      description: 'Nhập số tiền giảm tối đa (vd: 300000 = 300k, 2000000 = 2 triệu). 💡 Để trống nếu giảm không giới hạn.',
+      description: 'Nhập số tiền giảm tối đa (vd: 300000 = 300k, 2000000 = 2 triệu). Để trống nếu giảm không giới hạn.',
       type: 'number',
       group: 'discount',
     }),
     defineField({
       name: 'minSpend',
       title: 'Đơn tối thiểu (VNĐ)',
-      description: 'Nhập số tiền đơn tối thiểu (vd: 50000 = 50k, 0 = 0đ). 💡 Để trống nếu không muốn hiển thị dòng điều kiện.',
+      description: 'Nhập số tiền đơn tối thiểu (vd: 50000 = 50k, 0 = 0đ). Để trống nếu không muốn hiển thị dòng điều kiện.',
       type: 'number',
       group: 'discount',
     }),
     defineField({
       name: 'customTitle',
       title: 'Tiêu đề vé tùy chỉnh (Ghi đè)',
-      description: '💡 Để trống hệ thống sẽ tự sinh: "giảm 22% Giảm tối đa 300kđ"',
+      description: 'Để trống hệ thống sẽ tự sinh: "giảm 22% Giảm tối đa 300kđ"',
       type: 'string',
       group: 'discount',
     }),
     defineField({
       name: 'customMinSpendText',
       title: 'Dòng điều kiện đơn tùy chỉnh (Ghi đè)',
-      description: '💡 Để trống hệ thống sẽ tự sinh từ mục "Đơn tối thiểu"',
+      description: 'Để trống hệ thống sẽ tự sinh từ mục "Đơn tối thiểu"',
       type: 'string',
       group: 'discount',
     }),
@@ -153,7 +155,7 @@ export const voucher = defineType({
     defineField({
       name: 'brandLabel',
       title: 'Chữ dưới logo cùi vé',
-      description: 'Ví dụ: FACEBOOK, YouTube, SHOPEE, Toàn Ngành Hàng. 💡 Để trống sẽ tự lấy theo Thương hiệu đã chọn.',
+      description: 'Ví dụ: FACEBOOK, YouTube, SHOPEE, Toàn Ngành Hàng. Để trống sẽ tự lấy theo Thương hiệu đã chọn.',
       type: 'string',
       group: 'branding',
     }),
@@ -178,10 +180,10 @@ export const voucher = defineType({
       type: 'string',
       options: {
         list: [
-          { title: '⚪ Không hiển thị', value: 'none' },
-          { title: '⚡ Huy hiệu Tia chớp (Số lượng có hạn)', value: 'flash_sale' },
-          { title: '🔴 Khung viền đỏ Độc quyền (Outline)', value: 'exclusive_outline' },
-          { title: '🏷️ Tag tùy chỉnh', value: 'custom_tag' },
+          { title: 'Không hiển thị', value: 'none' },
+          { title: 'Huy hiệu Tia chớp (Số lượng có hạn)', value: 'flash_sale' },
+          { title: 'Khung viền đỏ Độc quyền (Outline)', value: 'exclusive_outline' },
+          { title: 'Tag tùy chỉnh', value: 'custom_tag' },
         ],
       },
       initialValue: 'none',
@@ -190,7 +192,7 @@ export const voucher = defineType({
     defineField({
       name: 'badgeText',
       title: 'Nội dung Huy hiệu / Tag',
-      description: 'Ví dụ: Độc Quyền Facebook, Độc Quyền YouTube Shopping, Số lượng có hạn. 💡 Để trống sẽ không hiển thị tag.',
+      description: 'Ví dụ: Độc Quyền Facebook, Độc Quyền YouTube Shopping, Số lượng có hạn. Để trống sẽ không hiển thị tag.',
       type: 'string',
       hidden: ({ parent }) => !parent?.badgeType || parent?.badgeType === 'none',
       group: 'badges',
@@ -198,7 +200,7 @@ export const voucher = defineType({
     defineField({
       name: 'usageProgress',
       title: 'Tiến độ đã dùng (%)',
-      description: 'Nhập số % (vd: 82). 💡 Để trống hoặc nhập 0 nếu muốn ẨN thanh tiến trình.',
+      description: 'Nhập số % (vd: 82). Để trống hoặc nhập 0 nếu muốn ẩn thanh tiến trình.',
       type: 'number',
       validation: (Rule) => Rule.min(0).max(100),
       group: 'badges',
@@ -209,10 +211,10 @@ export const voucher = defineType({
       type: 'string',
       options: {
         list: [
-          { title: '⚪ Không hiển thị', value: 'none' },
-          { title: '🔥 Đang hết nhanh (Chữ đỏ)', value: 'running_out' },
-          { title: '📊 Đã dùng X% (Lấy theo % tiến độ đã dùng)', value: 'percent_used' },
-          { title: '✍️ Nhập text cảnh báo tùy chỉnh', value: 'custom' },
+          { title: 'Không hiển thị', value: 'none' },
+          { title: 'Đang hết nhanh (Chữ đỏ)', value: 'running_out' },
+          { title: 'Đã dùng X% (Lấy theo % tiến độ đã dùng)', value: 'percent_used' },
+          { title: 'Nhập text cảnh báo tùy chỉnh', value: 'custom' },
         ],
       },
       initialValue: 'none',
@@ -229,7 +231,7 @@ export const voucher = defineType({
     defineField({
       name: 'expiryText',
       title: 'Thời gian hết hạn',
-      description: 'Ví dụ: Còn 13 giờ, Còn 1 ngày. 💡 Để trống sẽ ẨN dòng thông tin hết hạn.',
+      description: 'Ví dụ: Còn 13 giờ, Còn 1 ngày. Để trống sẽ ẩn dòng thông tin hết hạn.',
       type: 'string',
       group: 'badges',
     }),
@@ -245,7 +247,7 @@ export const voucher = defineType({
       badge: 'badgeText',
     },
     prepare({ title, code, status, discount, active, brand, badge }) {
-      const activeStatus = active !== false ? '🟢' : '⚪ [TẮT]';
+      const activeStatus = active !== false ? '[BẬT]' : '[TẮT]';
       const brandStr = brand ? `[${brand.toUpperCase()}]` : '';
       const badgeStr = badge ? ` | Badge: ${badge}` : '';
       const discountStr = discount ? ` - Giảm ${discount}%` : '';

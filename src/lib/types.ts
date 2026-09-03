@@ -47,6 +47,17 @@ export interface VoucherItem {
   endTime?: string;
 }
 
+export interface SuggestedVoucherItem {
+  _id: string;
+  title: string;
+  image?: any;
+  imageUrl?: string;
+  linkUrl: string;
+  isActive?: boolean;
+  orderPriority?: number;
+  badgeText?: string;
+}
+
 export interface BannerSlideItem {
   _key?: string;
   title?: string;
@@ -96,8 +107,10 @@ export interface ThemeConfig {
   voucherNoticeText?: string;
   showSocialProofTicker?: boolean;
   socialProofMessages?: string[];
-  showVouchersTeaser?: boolean;
   showQuickGuide?: boolean;
+  showSuggestedVouchers?: boolean;
+  suggestedVouchersTitle?: string;
+  suggestedVouchersLayout?: 'grid' | 'slide';
   zaloGroupUrl?: string;
 
   // Desktop Restriction & QR Handoff Settings

@@ -1,9 +1,11 @@
 import { defineType, defineField } from 'sanity';
+import { UsersIcon } from '@sanity/icons';
 
 export const adminUser = defineType({
   name: 'adminUser',
-  title: 'Quản lý user',
+  title: 'Quản lý người dùng',
   type: 'document',
+  icon: UsersIcon,
   fields: [
     defineField({
       name: 'username',
@@ -42,8 +44,8 @@ export const adminUser = defineType({
       type: 'string',
       options: {
         list: [
-          { title: '🟢 Hoạt động (Active)', value: 'active' },
-          { title: '🔴 Khóa tài khoản (Inactive)', value: 'inactive' },
+          { title: 'Hoạt động (Active)', value: 'active' },
+          { title: 'Khóa tài khoản (Inactive)', value: 'inactive' },
         ],
         layout: 'radio',
       },
@@ -66,7 +68,7 @@ export const adminUser = defineType({
     prepare({ title, subtitle, status, role }) {
       const isAct = status === 'active';
       return {
-        title: `${isAct ? '🟢' : '🔴'} ${title || subtitle} (${role || 'admin'})`,
+        title: `[${isAct ? 'Hoạt động' : 'Đã khóa'}] ${title || subtitle} (${role || 'admin'})`,
         subtitle: `Tên đăng nhập: ${subtitle || 'Chưa đặt'}`,
       };
     },

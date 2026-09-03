@@ -1,6 +1,6 @@
 import { sanityClient } from '@/sanity/client';
 import { urlForImage, urlForOgImage } from '@/sanity/image';
-import { AppConfig, VoucherItem, ThemeConfig, BannerSlideItem } from './types';
+import { AppConfig, VoucherItem, SuggestedVoucherItem, ThemeConfig, BannerSlideItem } from './types';
 
 interface CacheItem<T> {
   data: T;
@@ -207,6 +207,38 @@ export async function getActiveVouchersCached(ttl: number = 60): Promise<Voucher
 }
 
 /**
+ * 2b. Cached Suggested Vouchers Hot (TTL: 60s)
+ */
+export async function getSuggestedVouchersCached(ttl: number = 60): Promise<SuggestedVoucherItem[]> {
+  const cacheKey = 'sanity_suggested_vouchers';
+  const cached = getCached<SuggestedVoucherItem[]>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const vouchers = await sanityClient.fetch<any[]>(
+      `*[_type == "suggestedVoucher" && isActive != false] | order(orderPriority asc, _createdAt desc){
+        _id,
+        title,
+        image,
+        "imageUrl": image.asset->url,
+        linkUrl,
+        badgeText,
+        orderPriority,
+        isActive
+      }`
+    );
+
+    if (vouchers && vouchers.length > 0) {
+      return setCached(cacheKey, vouchers, ttl);
+    }
+  } catch (err) {
+    console.error('[SanityCache] Error fetching suggested vouchers:', err);
+  }
+
+  return [];
+}
+
+/**
  * 3. Cached Theme Config (TTL: 60s)
  */
 export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfig> {
@@ -253,8 +285,10 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
           voucherNoticeText,
           showSocialProofTicker,
           socialProofMessages,
-          showVouchersTeaser,
           showQuickGuide,
+          showSuggestedVouchers,
+          suggestedVouchersTitle,
+          suggestedVouchersLayout,
           // Desktop Restriction & QR Handoff
           blockDesktopConvert,
           desktopButtonText,
@@ -359,8 +393,10 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       socialProofMessages: Array.isArray(rawTheme?.socialProofMessages) && rawTheme.socialProofMessages.filter(Boolean).length > 0
         ? rawTheme.socialProofMessages.filter(Boolean)
         : defaultSocialMessages,
-      showVouchersTeaser: rawTheme?.showVouchersTeaser !== false,
       showQuickGuide: rawTheme?.showQuickGuide !== false,
+      showSuggestedVouchers: rawTheme?.showSuggestedVouchers !== false,
+      suggestedVouchersTitle: rawTheme?.suggestedVouchersTitle || 'Gợi Ý Voucher Hot Hôm Nay',
+      suggestedVouchersLayout: rawTheme?.suggestedVouchersLayout === 'grid' ? 'grid' : 'slide',
       // Desktop Restriction Settings
       blockDesktopConvert: rawTheme?.blockDesktopConvert !== false,
       desktopButtonText: rawTheme?.desktopButtonText || 'QUÉT MÃ MỞ TRÊN ĐIỆN THOẠI',
@@ -374,7 +410,7 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       zaloCardMembers: rawTheme?.zaloCardMembers || 'Hơn 15.000+ thành viên',
       zaloCardButtonText: rawTheme?.zaloCardButtonText || 'Vào Nhóm Zalo Săn Sale (Miễn Phí)',
       showFloatingZalo: rawTheme?.showFloatingZalo !== false,
-      floatingZaloText: rawTheme?.floatingZaloText || 'Nhận mã 22% & mã Live sớm nhất! 💬',
+      floatingZaloText: rawTheme?.floatingZaloText || 'Nhận mã 22% & mã Live sớm nhất!',
       metaTitle: rawTheme?.metaTitle || defaultMetaTitle,
       metaDescription: rawTheme?.metaDescription || defaultMetaDesc,
       metaKeywords: rawTheme?.metaKeywords || 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
@@ -410,8 +446,10 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
       '1.450+ lượt lấy mã thành công hôm nay',
       'Mã Shopee Live & Video vừa áp (-70k)',
     ],
-    showVouchersTeaser: true,
     showQuickGuide: true,
+    showSuggestedVouchers: true,
+    suggestedVouchersTitle: 'Gợi Ý Voucher Hot Hôm Nay',
+    suggestedVouchersLayout: 'slide',
     blockDesktopConvert: true,
     desktopButtonText: 'QUÉT MÃ MỞ TRÊN ĐIỆN THOẠI',
     desktopModalTitle: 'Mở trên điện thoại để nhận mã 25%',
@@ -423,7 +461,7 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
     zaloCardMembers: 'Hơn 15.000+ thành viên',
     zaloCardButtonText: 'Vào Nhóm Zalo Săn Sale (Miễn Phí)',
     showFloatingZalo: true,
-    floatingZaloText: 'Nhận mã 22% & mã Live sớm nhất! 💬',
+    floatingZaloText: 'Nhận mã 22% & mã Live sớm nhất!',
     metaTitle: 'Sale Hunter - Săn Mã Shopee & Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%',
     metaDescription: 'Sale Hunter - Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.',
     metaKeywords: 'săn mã shopee, chuyển đổi link shopee, mã giảm giá shopee, voucher shopee 22%, mã shopee live, mã youtube shopee, săn sale shopee',
