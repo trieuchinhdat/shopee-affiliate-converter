@@ -49,9 +49,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="flex flex-1 flex-col justify-center overflow-hidden min-w-0">
-          <h3 className="line-clamp-2 text-xs sm:text-sm font-semibold text-slate-100 leading-snug">
+          <h2 className="line-clamp-2 text-xs sm:text-sm font-semibold text-slate-100 leading-snug">
             {product.productName}
-          </h3>
+          </h2>
           <div className="mt-1 flex items-center gap-2 flex-wrap">
             {product.formattedPrice ? (
               <span className="text-sm sm:text-base font-extrabold text-orange-400 font-mono">

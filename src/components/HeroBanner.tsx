@@ -191,7 +191,7 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
           })}
         </div>
 
-        {/* Desktop Prev / Next Navigation Arrows (subtle hover buttons) */}
+        {/* Desktop Prev / Next Navigation Arrows with Accessible Touch Target */}
         <button
           type="button"
           onClick={(e) => {
@@ -199,7 +199,7 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
             prevSlide();
           }}
           aria-label="Slide trước"
-          className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black/45 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-90 hover:opacity-100 hover:bg-orange-500 hover:border-orange-400 transition-all active:scale-95 shadow-md"
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 sm:h-10 sm:w-10 min-h-[36px] min-w-[36px] items-center justify-center rounded-full bg-black/55 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover:opacity-90 hover:opacity-100 hover:bg-orange-500 hover:border-orange-400 transition-all active:scale-95 shadow-md"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -211,13 +211,13 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
             nextSlide();
           }}
           aria-label="Slide tiếp theo"
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black/45 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-90 hover:opacity-100 hover:bg-orange-500 hover:border-orange-400 transition-all active:scale-95 shadow-md"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 sm:h-10 sm:w-10 min-h-[36px] min-w-[36px] items-center justify-center rounded-full bg-black/55 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover:opacity-90 hover:opacity-100 hover:bg-orange-500 hover:border-orange-400 transition-all active:scale-95 shadow-md"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
 
-        {/* Carousel Dots Pagination Indicators */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-xs px-2 py-1 border border-white/10">
+        {/* Carousel Dots Pagination Indicators with Accessible Touch Targets */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center rounded-full bg-black/50 backdrop-blur-xs px-1 border border-white/10">
           {slides.map((_, idx) => (
             <button
               key={idx}
@@ -227,12 +227,16 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
                 goToSlide(idx);
               }}
               aria-label={`Chuyển đến slide ${idx + 1}`}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                idx === currentIndex
-                  ? 'w-4 sm:w-5 bg-gradient-to-r from-orange-500 to-amber-400 shadow-sm'
-                  : 'w-1.5 bg-white/40 hover:bg-white/70'
-              }`}
-            />
+              className="p-2 min-h-[36px] flex items-center justify-center focus:outline-none"
+            >
+              <span
+                className={`h-1.5 rounded-full transition-all duration-300 block ${
+                  idx === currentIndex
+                    ? 'w-4 sm:w-5 bg-gradient-to-r from-orange-500 to-amber-400 shadow-sm'
+                    : 'w-1.5 bg-white/40 hover:bg-white/70'
+                }`}
+              />
+            </button>
           ))}
         </div>
       </div>

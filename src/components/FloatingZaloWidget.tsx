@@ -48,7 +48,7 @@ export default function FloatingZaloWidget({
           <button
             type="button"
             onClick={() => setShowTooltip(false)}
-            className="text-slate-400 hover:text-white p-1 -mr-1 -mt-1 rounded-lg hover:bg-white/10 transition-colors shrink-0"
+            className="text-slate-400 hover:text-white p-2 -mr-1.5 -mt-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors shrink-0"
             title="Đóng thông báo"
             aria-label="Đóng thông báo Zalo"
           >

@@ -30,10 +30,10 @@ export default function SuggestedVouchers({
     <section className="space-y-2.5 pt-1 animate-fadeIn">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white uppercase tracking-wide">
+        <h2 className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white uppercase tracking-wide">
           <Sparkles className="h-4 w-4 text-orange-400 fill-orange-400/20" />
           <span>{title}</span>
-        </div>
+        </h2>
         <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-orange-400 font-semibold bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
           <Flame className="h-3 w-3 animate-pulse text-orange-400 fill-orange-400" />
           <span>Mở App Lưu Ngay</span>

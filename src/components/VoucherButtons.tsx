@@ -287,9 +287,9 @@ export default function VoucherButtons({
     <div className="space-y-3">
       {/* Section Header */}
       <div className="flex items-center justify-between px-1">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
           <span>VOUCHER ĐỘC QUYỀN SHOPEE</span>
-        </h4>
+        </h2>
         <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           Tự động áp mã vào App
@@ -417,7 +417,7 @@ export default function VoucherButtons({
 
                   {/* Line 5: Footer Status & Expiry (Chỉ hiển thị nếu có cảnh báo hoặc thời hạn) */}
                   {hasFooterInfo && (
-                    <div className="mt-1 flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-500 leading-tight flex-wrap">
+                    <div className="mt-1 flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-600 leading-tight flex-wrap">
                       {urgencyEl}
                       {urgencyEl && hasExpiry && <span className="text-slate-300">•</span>}
                       {hasExpiry && <span>hết hạn trong: {voucher.expiryText?.trim()}</span>}

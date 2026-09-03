@@ -82,11 +82,12 @@ export default function DesktopQrModal({
         {/* Ambient Top Glow */}
         <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-72 -translate-x-1/2 rounded-full bg-gradient-to-br from-orange-500/25 to-amber-500/10 blur-3xl" />
 
-        {/* Close Button */}
+        {/* Close Button with Accessible Hit Area */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-xl p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+          className="absolute right-3 top-3 rounded-xl p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
           title="Đóng"
+          aria-label="Đóng hộp thoại mã QR"
         >
           <X className="h-5 w-5" />
         </button>
@@ -100,9 +101,9 @@ export default function DesktopQrModal({
         </div>
 
         {/* Title & Subtitle */}
-        <h3 className="text-lg sm:text-xl font-black tracking-tight text-white">
+        <h2 className="text-lg sm:text-xl font-black tracking-tight text-white">
           {title}
-        </h3>
+        </h2>
         <p className="mt-1.5 text-xs sm:text-sm text-slate-300 leading-relaxed">
           {subtitle}
         </p>

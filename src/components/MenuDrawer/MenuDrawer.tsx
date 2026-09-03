@@ -146,7 +146,7 @@ export default function MenuDrawer({ isOpen, onClose, theme }: MenuDrawerProps) 
               <button
                 type="button"
                 onClick={() => setCurrentView('menu')}
-                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 min-h-[40px] text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span>Quay lại menu</span>
@@ -169,7 +169,7 @@ export default function MenuDrawer({ isOpen, onClose, theme }: MenuDrawerProps) 
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="flex h-10 w-10 min-h-[40px] min-w-[40px] items-center justify-center rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 title="Đóng menu"
                 aria-label="Đóng menu"
               >

@@ -155,7 +155,8 @@ export default function ConvertInput({
           <span className="flex-1 font-medium">{notice}</span>
           <button
             onClick={() => setNotice(null)}
-            className="text-amber-400 hover:text-white p-1"
+            className="text-amber-400 hover:text-white p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+            aria-label="Đóng thông báo"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -174,6 +175,7 @@ export default function ConvertInput({
             ref={inputRef}
             type="text"
             value={url}
+            aria-label="Nhập link sản phẩm Shopee"
             onChange={(e) => {
               if (isDesktopBlocked) return;
               setUrl(e.target.value);
@@ -204,8 +206,9 @@ export default function ConvertInput({
             <button
               type="button"
               onClick={handleClear}
-              className="mr-1 rounded-xl p-2 text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              className="mr-1 rounded-xl p-2 min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
               title="Xóa link"
+              aria-label="Xóa link đã nhập"
             >
               <X className="h-4 w-4" />
             </button>
@@ -213,8 +216,9 @@ export default function ConvertInput({
             <button
               type="button"
               onClick={() => setIsQrModalOpen(true)}
-              className="mr-1 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 py-1.5 text-xs font-bold text-orange-300 hover:bg-orange-500/25 hover:text-white transition-all shrink-0"
+              className="mr-1 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 py-2 min-h-[40px] text-xs font-bold text-orange-300 hover:bg-orange-500/25 hover:text-white transition-all shrink-0"
               title="Quét mã QR để mở trên điện thoại"
+              aria-label="Quét mã QR để mở trên điện thoại"
             >
               <QrCode className="h-3.5 w-3.5" />
               <span>Mã QR</span>
@@ -223,8 +227,9 @@ export default function ConvertInput({
             <button
               type="button"
               onClick={handleSmartAction}
-              className="mr-1 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 py-1.5 text-xs font-bold text-orange-300 hover:bg-orange-500/25 hover:text-white transition-all shrink-0"
+              className="mr-1 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 py-2 min-h-[40px] text-xs font-bold text-orange-300 hover:bg-orange-500/25 hover:text-white transition-all shrink-0"
               title="Dán từ bộ nhớ tạm"
+              aria-label="Dán link từ bộ nhớ tạm"
             >
               <Clipboard className="h-3.5 w-3.5" />
               <span>Dán</span>

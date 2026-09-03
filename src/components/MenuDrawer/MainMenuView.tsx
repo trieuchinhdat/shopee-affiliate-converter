@@ -84,8 +84,8 @@ export default function MainMenuView({
               </span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <span className="text-[11px] text-slate-500">Săn mã</span>
-              <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-white transition-colors" />
+              <span className="text-[11px] text-slate-400">Săn mã</span>
+              <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
             </div>
           </button>
 
@@ -180,7 +180,7 @@ export default function MainMenuView({
                 Hỏi đáp thường gặp (FAQ)
               </span>
             </div>
-            <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" />
+            <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-300 transition-colors shrink-0" />
           </Link>
 
           {/* Safety Center */}
@@ -197,7 +197,7 @@ export default function MainMenuView({
                 Trung tâm an toàn
               </span>
             </div>
-            <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" />
+            <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-300 transition-colors shrink-0" />
           </Link>
 
           {/* Privacy Policy */}
@@ -214,7 +214,7 @@ export default function MainMenuView({
                 Chính sách bảo mật
               </span>
             </div>
-            <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" />
+            <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-300 transition-colors shrink-0" />
           </Link>
 
           {/* Admin Login */}
@@ -231,7 +231,7 @@ export default function MainMenuView({
                 Đăng nhập Quản trị
               </span>
             </div>
-            <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" />
+            <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-300 transition-colors shrink-0" />
           </Link>
         </div>
       </div>
@@ -256,7 +256,7 @@ export default function MainMenuView({
           )}
         </button>
 
-        <p className="text-center text-[10px] text-slate-600 font-mono">
+        <p className="text-center text-[10px] text-slate-400 font-mono">
           v1.2 • Shopee Affiliate Converter
         </p>
       </div>

@@ -65,9 +65,9 @@ export default function ZaloCommunityCard({
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
+              <h2 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
                 {title}
-              </h3>
+              </h2>
               <span className="rounded-md bg-blue-500/20 px-2 py-0.5 text-[9px] font-extrabold text-blue-300 border border-blue-400/30">
                 MIỄN PHÍ
               </span>
