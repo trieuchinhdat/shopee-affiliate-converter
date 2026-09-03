@@ -36,10 +36,6 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
     setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
   }, [slides.length]);
 
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
-
   // Auto-play timer
   useEffect(() => {
     if (!autoSlide || slides.length <= 1 || isPaused) return;
@@ -216,27 +212,20 @@ export default function HeroBanner({ theme, onFocusInput }: HeroBannerProps) {
           <ChevronRight className="h-4 w-4" />
         </button>
 
-        {/* Carousel Dots Pagination Indicators with Accessible Touch Targets */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center rounded-full bg-black/50 backdrop-blur-xs px-1 border border-white/10">
+        {/* Carousel Dots Pagination Indicators (Visual Indicators) */}
+        <div
+          aria-hidden="true"
+          className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 rounded-full bg-black/50 backdrop-blur-xs px-2.5 py-1 border border-white/10 pointer-events-none select-none"
+        >
           {slides.map((_, idx) => (
-            <button
+            <span
               key={idx}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                goToSlide(idx);
-              }}
-              aria-label={`Chuyển đến slide ${idx + 1}`}
-              className="p-2 min-h-[36px] flex items-center justify-center focus:outline-none"
-            >
-              <span
-                className={`h-1.5 rounded-full transition-all duration-300 block ${
-                  idx === currentIndex
-                    ? 'w-4 sm:w-5 bg-gradient-to-r from-orange-500 to-amber-400 shadow-sm'
-                    : 'w-1.5 bg-white/40 hover:bg-white/70'
-                }`}
-              />
-            </button>
+              className={`h-1.5 rounded-full transition-all duration-300 block ${
+                idx === currentIndex
+                  ? 'w-4 sm:w-5 bg-gradient-to-r from-orange-500 to-amber-400 shadow-sm'
+                  : 'w-1.5 bg-white/40'
+              }`}
+            />
           ))}
         </div>
       </div>
