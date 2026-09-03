@@ -1,11 +1,17 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Clipboard, Sparkles, X, Loader2, ArrowRight, Zap, Link as LinkIcon } from 'lucide-react';
+import { Clipboard, Sparkles, X, Loader2, ArrowRight, Zap, Link as LinkIcon, QrCode, Smartphone } from 'lucide-react';
+import { useIsDesktop } from '@/lib/device';
+import DesktopQrModal from '@/components/DesktopQrModal';
 
 interface ConvertInputProps {
   onConvert: (url: string) => Promise<void>;
   isLoading: boolean;
+  blockDesktopConvert?: boolean;
+  desktopButtonText?: string;
+  desktopModalTitle?: string;
+  desktopModalSubtitle?: string;
 }
 
 // Smart URL Extractor: extracts pure Shopee URL from messy shared text or direct inputs
@@ -28,10 +34,21 @@ export function extractShopeeUrl(text: string): string | null {
   return null;
 }
 
-export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps) {
+export default function ConvertInput({
+  onConvert,
+  isLoading,
+  blockDesktopConvert,
+  desktopButtonText,
+  desktopModalTitle,
+  desktopModalSubtitle,
+}: ConvertInputProps) {
   const [url, setUrl] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const isDesktop = useIsDesktop();
+  const isDesktopBlocked = isDesktop && blockDesktopConvert !== false;
 
   const showTemporaryNotice = (msg: string) => {
     setNotice(msg);
@@ -52,6 +69,11 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
 
   const handleSmartAction = async () => {
     if (isLoading) return;
+
+    if (isDesktopBlocked) {
+      setIsQrModalOpen(true);
+      return;
+    }
 
     if (url.trim()) {
       const clean = extractShopeeUrl(url.trim()) || url.trim();
@@ -86,6 +108,12 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
   };
 
   const handleNativePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    if (isDesktopBlocked) {
+      e.preventDefault();
+      setIsQrModalOpen(true);
+      return;
+    }
+
     const pastedText = e.clipboardData.getData('text');
     const extracted = extractShopeeUrl(pastedText);
 
@@ -106,6 +134,10 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDesktopBlocked) {
+      setIsQrModalOpen(true);
+      return;
+    }
     if (url.trim() && !isLoading) {
       const clean = extractShopeeUrl(url.trim()) || url.trim();
       setUrl(clean);
@@ -142,14 +174,33 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
             ref={inputRef}
             type="text"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              if (isDesktopBlocked) return;
+              setUrl(e.target.value);
+            }}
             onPaste={handleNativePaste}
-            placeholder="Dán link Shopee (vd: https://s.shopee.vn/...)"
-            className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none"
+            onClick={() => {
+              if (isDesktopBlocked) setIsQrModalOpen(true);
+            }}
+            onKeyDown={(e) => {
+              if (isDesktopBlocked && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                e.preventDefault();
+                setIsQrModalOpen(true);
+              }
+            }}
+            readOnly={isDesktopBlocked}
+            placeholder={
+              isDesktopBlocked
+                ? 'Quét mã QR để mở trên điện thoại & nhận mã...'
+                : 'Dán link Shopee (vd: https://s.shopee.vn/...)'
+            }
+            className={`w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none ${
+              isDesktopBlocked ? 'cursor-pointer select-none' : ''
+            }`}
             disabled={isLoading}
           />
 
-          {url ? (
+          {url && !isDesktopBlocked ? (
             <button
               type="button"
               onClick={handleClear}
@@ -157,6 +208,16 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
               title="Xóa link"
             >
               <X className="h-4 w-4" />
+            </button>
+          ) : isDesktopBlocked ? (
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(true)}
+              className="mr-1 flex items-center gap-1.5 rounded-xl bg-orange-500/15 border border-orange-500/30 px-3 py-1.5 text-xs font-bold text-orange-300 hover:bg-orange-500/25 hover:text-white transition-all shrink-0"
+              title="Quét mã QR để mở trên điện thoại"
+            >
+              <QrCode className="h-3.5 w-3.5" />
+              <span>Mã QR</span>
             </button>
           ) : (
             <button
@@ -177,7 +238,9 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
           onClick={handleSmartAction}
           disabled={isLoading}
           className={`relative flex min-h-[54px] sm:min-h-[58px] w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 font-extrabold text-sm sm:text-base tracking-wide text-white shadow-xl transition-all active:scale-[0.98] disabled:opacity-75 ${
-            url.trim()
+            isDesktopBlocked
+              ? 'bg-gradient-to-r from-[#ee4d2d] via-orange-600 to-amber-600 shadow-orange-600/30 hover:brightness-110'
+              : url.trim()
               ? 'bg-gradient-to-r from-[#ee4d2d] via-orange-500 to-amber-500 shadow-orange-500/35 hover:brightness-110'
               : 'bg-gradient-to-r from-[#ee4d2d] via-orange-600 to-amber-600 shadow-orange-600/30 hover:brightness-110'
           }`}
@@ -186,6 +249,11 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
               <span>Đang lấy mã giảm giá...</span>
+            </>
+          ) : isDesktopBlocked ? (
+            <>
+              <span>{desktopButtonText || 'QUÉT MÃ MỞ TRÊN ĐIỆN THOẠI'}</span>
+              <QrCode className="h-5 w-5 text-amber-300" />
             </>
           ) : url.trim() ? (
             <>
@@ -199,7 +267,23 @@ export default function ConvertInput({ onConvert, isLoading }: ConvertInputProps
             </>
           )}
         </button>
+
+        {/* Desktop Hint */}
+        {isDesktopBlocked && (
+          <div className="flex items-center justify-center gap-1.5 text-center text-xs text-orange-400/90 font-medium pt-1">
+            <Smartphone className="h-3.5 w-3.5 shrink-0" />
+            <span>Mã giảm giá áp dụng trên Shopee App. Bấm để quét mã QR mở trên điện thoại.</span>
+          </div>
+        )}
       </form>
+
+      {/* Desktop QR Modal */}
+      <DesktopQrModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        title={desktopModalTitle}
+        subtitle={desktopModalSubtitle}
+      />
     </div>
   );
 }

@@ -2,9 +2,39 @@
  * Telegram Notification Helper for Shopee Affiliate Converter
  */
 
+// Vietnamese City Map for standardizing GeoIP names from Edge CDN (Vercel / Cloudflare)
+const VN_CITIES_MAP: Record<string, string> = {
+  hanoi: 'Hà Nội',
+  'ha noi': 'Hà Nội',
+  'ho chi minh': 'TP. Hồ Chí Minh',
+  'ho chi minh city': 'TP. Hồ Chí Minh',
+  saigon: 'TP. Hồ Chí Minh',
+  'da nang': 'Đà Nẵng',
+  danang: 'Đà Nẵng',
+  'hai phong': 'Hải Phòng',
+  haiphong: 'Hải Phòng',
+  'can tho': 'Cần Thơ',
+  cantho: 'Cần Thơ',
+  'binh duong': 'Bình Dương',
+  'dong nai': 'Đồng Nai',
+  'bac ninh': 'Bắc Ninh',
+  'quang ninh': 'Quảng Ninh',
+  'nghe an': 'Nghệ An',
+  'thanh hoa': 'Thanh Hóa',
+  'thua thien hue': 'Huế',
+  hue: 'Huế',
+  'khanh hoa': 'Khánh Hòa',
+  'nha trang': 'Nha Trang',
+  'vung tau': 'Vũng Tàu',
+  'ba ria - vung tau': 'Vũng Tàu',
+  'lam dong': 'Lâm Đồng',
+  'da lat': 'Đà Lạt',
+  dalat: 'Đà Lạt',
+};
+
 export function formatVietnamTime(date = new Date()): string {
   try {
-    // Format to HH:mm:ss - DD/MM/YYYY in Asia/Ho_Chi_Minh timezone
+    // Format to HH:mm:ss · DD/MM/YYYY in Asia/Ho_Chi_Minh timezone
     const formatter = new Intl.DateTimeFormat('vi-VN', {
       timeZone: 'Asia/Ho_Chi_Minh',
       hour: '2-digit',
@@ -26,7 +56,7 @@ export function formatVietnamTime(date = new Date()): string {
     const month = getPart('month');
     const year = getPart('year');
 
-    return `${hour}:${minute}:${second} - ${day}/${month}/${year}`;
+    return `${hour}:${minute}:${second} · ${day}/${month}/${year}`;
   } catch {
     return date.toISOString().replace('T', ' ').slice(0, 19);
   }
@@ -37,43 +67,56 @@ export function parseDevice(userAgent: string): string {
 
   const ua = userAgent.toLowerCase();
 
+  // Check In-App Browser context (critical for affiliate channel analytics)
+  const isZalo = ua.includes('zalo');
+  const isFb = /fbav|fban|fb_iab|facebook/i.test(ua);
+  const isTikTok = ua.includes('tiktok');
+
+  const appTag = isZalo ? ' (Zalo)' : isFb ? ' (FB App)' : isTikTok ? ' (TikTok)' : '';
+
   if (/iphone|ipad|ipod/i.test(ua)) {
-    return 'Mobile (iOS)';
+    return `iOS${appTag}`;
   }
   if (/android/i.test(ua)) {
-    return 'Mobile (Android)';
+    return `Android${appTag}`;
   }
   if (/macintosh|mac os x/i.test(ua)) {
-    return 'Desktop (macOS)';
+    return 'macOS';
   }
   if (/windows/i.test(ua)) {
-    return 'Desktop (Windows)';
+    return 'Windows';
   }
   if (/linux/i.test(ua)) {
-    return 'Desktop (Linux)';
+    return 'Linux';
   }
   if (/mobile/i.test(ua)) {
-    return 'Mobile';
+    return `Mobile${appTag}`;
   }
   return 'Desktop';
 }
 
 export function parseLocation(headers: Headers): string {
-  const city = headers.get('x-vercel-ip-city') || headers.get('cf-ipcity');
+  const rawCity = headers.get('x-vercel-ip-city') || headers.get('cf-ipcity');
   const region = headers.get('x-vercel-ip-country-region') || headers.get('cf-region');
   const country = headers.get('x-vercel-ip-country') || headers.get('cf-ipcountry') || 'VN';
 
-  if (city) {
+  if (rawCity) {
     try {
-      const decodedCity = decodeURIComponent(city);
-      return `${decodedCity}, ${country}`;
+      const decodedCity = decodeURIComponent(rawCity).trim();
+      const lookupKey = decodedCity.toLowerCase();
+      const prettyCity = VN_CITIES_MAP[lookupKey] || decodedCity;
+      return `${prettyCity}, ${country}`;
     } catch {
-      return `${city}, ${country}`;
+      const lookupKey = rawCity.toLowerCase().trim();
+      const prettyCity = VN_CITIES_MAP[lookupKey] || rawCity;
+      return `${prettyCity}, ${country}`;
     }
   }
 
   if (region) {
-    return `${region}, ${country}`;
+    const lookupKey = region.toLowerCase().trim();
+    const prettyRegion = VN_CITIES_MAP[lookupKey] || region;
+    return `${prettyRegion}, ${country}`;
   }
 
   return country === 'VN' ? 'Việt Nam' : country;
@@ -83,12 +126,34 @@ export function maskIp(ip: string): string {
   if (!ip || ip === '127.0.0.1' || ip === '::1') return '127.0.0.1';
 
   // IPv4 masking: 113.161.22.45 -> 113.161.x.x
-  const parts = ip.split('.');
-  if (parts.length === 4) {
-    return `${parts[0]}.${parts[1]}.x.x`;
+  const ipv4Parts = ip.split('.');
+  if (ipv4Parts.length === 4) {
+    return `${ipv4Parts[0]}.${ipv4Parts[1]}.x.x`;
+  }
+
+  // IPv6 masking: 2402:800:61cd:1234:... -> 2402:800:xxxx:xxxx::
+  const ipv6Parts = ip.split(':');
+  if (ipv6Parts.length >= 4) {
+    return `${ipv6Parts[0]}:${ipv6Parts[1]}:xxxx:xxxx::`;
   }
 
   return ip;
+}
+
+export function escapeHtml(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+export function truncateProductName(name: string, maxLength = 50): string {
+  if (!name) return 'Sản phẩm Shopee';
+  const clean = name.trim().replace(/\s+/g, ' ');
+  if (clean.length <= maxLength) return clean;
+  return clean.slice(0, maxLength).trim() + '...';
 }
 
 export function isBotUserAgent(userAgent: string): boolean {
@@ -100,7 +165,8 @@ export function isBotUserAgent(userAgent: string): boolean {
 export async function sendTelegramMessage(
   token: string,
   chatId: string,
-  message: string
+  message: string,
+  parseMode: 'HTML' | 'MarkdownV2' = 'HTML'
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (!token || !chatId) {
@@ -120,6 +186,7 @@ export async function sendTelegramMessage(
       body: JSON.stringify({
         chat_id: cleanChatId,
         text: message,
+        parse_mode: parseMode,
         disable_web_page_preview: true,
       }),
       // Set 4 second timeout so it never hangs
@@ -139,3 +206,4 @@ export async function sendTelegramMessage(
     return { success: false, error: err.message || 'Lỗi kết nối Telegram' };
   }
 }
+

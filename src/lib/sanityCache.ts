@@ -255,6 +255,11 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
           socialProofMessages,
           showVouchersTeaser,
           showQuickGuide,
+          // Desktop Restriction & QR Handoff
+          blockDesktopConvert,
+          desktopButtonText,
+          desktopModalTitle,
+          desktopModalSubtitle,
           // Zalo & Social Fields
           showZaloCard,
           zaloCardTitle,
@@ -356,6 +361,11 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
         : defaultSocialMessages,
       showVouchersTeaser: rawTheme?.showVouchersTeaser !== false,
       showQuickGuide: rawTheme?.showQuickGuide !== false,
+      // Desktop Restriction Settings
+      blockDesktopConvert: rawTheme?.blockDesktopConvert !== false,
+      desktopButtonText: rawTheme?.desktopButtonText || 'QUÉT MÃ MỞ TRÊN ĐIỆN THOẠI',
+      desktopModalTitle: rawTheme?.desktopModalTitle || 'Mở trên điện thoại để nhận mã 25%',
+      desktopModalSubtitle: rawTheme?.desktopModalSubtitle || 'Mã giảm giá Shopee độc quyền và tính năng tự động mở App hoạt động tối ưu nhất trên điện thoại di động.',
       // Zalo Card & Floating
       zaloGroupUrl: rawAppConfig?.zaloGroupUrl || 'https://zalo.me/g/kczvyi443',
       showZaloCard: rawTheme?.showZaloCard !== false,
@@ -402,6 +412,10 @@ export async function getThemeConfigCached(ttl: number = 60): Promise<ThemeConfi
     ],
     showVouchersTeaser: true,
     showQuickGuide: true,
+    blockDesktopConvert: true,
+    desktopButtonText: 'QUÉT MÃ MỞ TRÊN ĐIỆN THOẠI',
+    desktopModalTitle: 'Mở trên điện thoại để nhận mã 25%',
+    desktopModalSubtitle: 'Mã giảm giá Shopee độc quyền và tính năng tự động mở App hoạt động tối ưu nhất trên điện thoại di động.',
     zaloGroupUrl: 'https://zalo.me/g/kczvyi443',
     showZaloCard: true,
     zaloCardTitle: 'Nhóm Zalo Báo Mã Săn Sale',

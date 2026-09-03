@@ -100,6 +100,12 @@ export interface ThemeConfig {
   showQuickGuide?: boolean;
   zaloGroupUrl?: string;
 
+  // Desktop Restriction & QR Handoff Settings
+  blockDesktopConvert?: boolean;
+  desktopModalTitle?: string;
+  desktopModalSubtitle?: string;
+  desktopButtonText?: string;
+
   // Zalo Community Card Settings
   showZaloCard?: boolean;
   zaloCardTitle?: string;
@@ -194,6 +200,10 @@ export interface NotifyClickPayload {
     shopId?: string;
     itemId?: string;
     imageUrl?: string;
+    price?: number;
+    formattedPrice?: string;
+    originalUrl?: string;
+    canonicalUrl?: string;
   };
   voucher?: {
     voucherCode?: string;

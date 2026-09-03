@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveShopeeProduct, isValidShopeeUrl, extractShopeeUrl, extractShopeeIds } from '@/lib/shopee-resolver';
 import { generateAllUniversalLinks, resolveAndExtractFacebookPayload, DEFAULT_FB_PAYLOAD } from '@/lib/universal-link';
-import { getAppConfigCached, getActiveVouchersCached } from '@/lib/sanityCache';
+import { getAppConfigCached, getActiveVouchersCached, getThemeConfigCached } from '@/lib/sanityCache';
 import { affipadService } from '@/lib/affipad-service';
 import { ConvertResult } from '@/lib/types';
 
@@ -27,6 +27,30 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Link không đúng định dạng Shopee (shopee.vn, s.shopee.vn, vn.shp.ee, shope.ee).' },
         { status: 400 }
       );
+    }
+
+    // Server-side Desktop Guard (protects AffiPad quota from PC bots and scrapers)
+    const theme = await getThemeConfigCached(60);
+    if (theme.blockDesktopConvert !== false) {
+      const userAgent = req.headers.get('user-agent') || '';
+      const secChUaMobile = req.headers.get('sec-ch-ua-mobile');
+      const isClientHintMobile = secChUaMobile === '?1';
+
+      if (!isClientHintMobile) {
+        const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(userAgent);
+        const isDesktopOS = /Windows NT|Macintosh|Linux x86_64|X11/i.test(userAgent) && !isMobileUA;
+        const isBot = !userAgent || /curl|postman|python|axios|httpclient/i.test(userAgent);
+
+        if (isDesktopOS || isBot) {
+          return NextResponse.json<ConvertResult>(
+            {
+              success: false,
+              error: 'Vui lòng sử dụng điện thoại để quét mã và chuyển đổi link trên Shopee App.',
+            },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     const product = await resolveShopeeProduct(cleanUrl);

@@ -26,6 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
         'săn sale shopee',
       ];
 
+  const siteUrl = theme.canonicalUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://sanmakhuyenmai.vn';
+
   const ogImages = theme.ogImageUrl
     ? [
         {
@@ -35,9 +37,14 @@ export async function generateMetadata(): Promise<Metadata> {
           alt: title,
         },
       ]
-    : [];
-
-  const siteUrl = theme.canonicalUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://sanmakhuyenmai.vn';
+    : [
+        {
+          url: `${siteUrl}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ];
 
   return {
     title,

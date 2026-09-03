@@ -8,6 +8,8 @@ import {
   maskIp,
   isBotUserAgent,
   sendTelegramMessage,
+  escapeHtml,
+  truncateProductName,
 } from '@/lib/telegram';
 
 export const dynamic = 'force-dynamic';
@@ -49,9 +51,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Prioritize Cloudflare / Vercel Edge IP headers for highest accuracy
     const rawIp =
+      req.headers.get('cf-connecting-ip')?.trim() ||
+      req.headers.get('x-vercel-forwarded-for')?.split(',')[0].trim() ||
       req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-      req.headers.get('x-real-ip') ||
+      req.headers.get('x-real-ip')?.trim() ||
       req.ip ||
       '127.0.0.1';
 
@@ -82,27 +87,56 @@ export async function POST(req: NextRequest) {
     const locationFormatted = parseLocation(req.headers);
     const maskedIp = maskIp(rawIp);
 
-    // Format Voucher text: "FB22 (-22%)" or "Mã FB 22% (-22%)"
-    const voucherCode = voucher.voucherCode || voucher.buttonLabel || 'Ưu đãi Shopee';
-    const discountText = voucher.discountPercent ? ` (-${voucher.discountPercent}%)` : '';
-    const voucherFormatted = `${voucherCode}${discountText}`;
-
-    // Format ShopId / ItemId
-    const shopItemIdFormatted =
+    // Format Product Title & Direct Shopee Link
+    const rawProductName = product.productName || 'Sản phẩm Shopee';
+    const truncatedTitle = truncateProductName(rawProductName, 55);
+    const productShopeeUrl =
       product.shopId && product.itemId
-        ? `${product.shopId} / ${product.itemId}`
-        : product.itemId || 'Chưa rõ';
+        ? `https://shopee.vn/product/${product.shopId}/${product.itemId}`
+        : product.canonicalUrl || product.originalUrl || 'https://shopee.vn';
 
-    // Step 5: Format Telegram Message
+    // Format Price & Estimated Savings
+    let priceText = 'Đang cập nhật';
+    const rawPrice = product.price;
+    const discountPercent = voucher.discountPercent || 0;
+
+    if (typeof rawPrice === 'number' && rawPrice > 0) {
+      const formattedPrice = product.formattedPrice || `${new Intl.NumberFormat('vi-VN').format(rawPrice)}đ`;
+      if (discountPercent > 0) {
+        const estimatedSavings = Math.min(Math.round((rawPrice * discountPercent) / 100), 2000000);
+        const savingsFormatted = `${new Intl.NumberFormat('vi-VN').format(estimatedSavings)}đ`;
+        priceText = `${formattedPrice} <i>(Giảm ~${savingsFormatted})</i>`;
+      } else {
+        priceText = formattedPrice;
+      }
+    } else if (product.formattedPrice) {
+      priceText = product.formattedPrice;
+    }
+
+    // Format Voucher text: METAPARSEP2201 (-22% FB)
+    const rawVoucherCode = voucher.voucherCode || voucher.buttonLabel || 'Ưu đãi Shopee';
+    const channelRaw = voucher.channel || '';
+    const channelTag = channelRaw.startsWith('fb')
+      ? ' FB'
+      : channelRaw === 'ytb'
+      ? ' YT'
+      : channelRaw === 'ig'
+      ? ' IG'
+      : channelRaw === 'zalo'
+      ? ' Zalo'
+      : '';
+    const discountTag = discountPercent > 0 ? ` (-${discountPercent}%${channelTag})` : '';
+
+    // Step 5: Format Telegram Message in HTML mode
     const message = [
-      '🔔 [Shopee Affiliate] Lượt Click Mới!',
-      `⏱️ Thời gian: ${timeFormatted}`,
+      '🔔 <b>[Shopee Affiliate] Lượt Click Mới!</b>',
+      `⏱️ ${timeFormatted}`,
       '━━━━━━━━━━━━━━━━━━',
-      `🛍️ Sản phẩm: ${product.productName || 'Sản phẩm Shopee'}`,
-      `🏷️ Mã: ${voucherFormatted}`,
-      `📱 Thiết bị: ${deviceFormatted}`,
-      `🌐 IP / Vị trí: ${maskedIp} (${locationFormatted})`,
-      `🔗 ShopId/ItemId: ${shopItemIdFormatted}`,
+      `🛍️ <b>Sản phẩm:</b> <a href="${productShopeeUrl}">${escapeHtml(truncatedTitle)}</a>`,
+      `<b>Giá bán:</b> ${priceText}`,
+      `<b>Voucher:</b> <code>${escapeHtml(rawVoucherCode)}</code>${discountTag}`,
+      `<b>Thiết bị:</b> ${escapeHtml(deviceFormatted)} · ${escapeHtml(locationFormatted)} (<code>${maskedIp}</code>)`,
+      '━━━━━━━━━━━━━━━━━━',
     ].join('\n');
 
     // Step 6: Dispatch message (await to ensure Vercel Lambda does not freeze before completion)

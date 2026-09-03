@@ -99,7 +99,14 @@ export default function HomeClient({ initialTheme }: HomeClientProps) {
           <HeroBanner theme={theme} />
 
           {/* Input Form */}
-          <ConvertInput onConvert={handleConvert} isLoading={isLoading} />
+          <ConvertInput
+            onConvert={handleConvert}
+            isLoading={isLoading}
+            blockDesktopConvert={theme?.blockDesktopConvert}
+            desktopButtonText={theme?.desktopButtonText}
+            desktopModalTitle={theme?.desktopModalTitle}
+            desktopModalSubtitle={theme?.desktopModalSubtitle}
+          />
 
           {/* Social Proof Real-time Ticker (Controlled by Sanity Theme) */}
           {theme?.showSocialProofTicker !== false && (

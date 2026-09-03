@@ -32,6 +32,26 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/manifest.webmanifest',
+  openGraph: {
+    title: 'Sale Hunter - Săn Mã Shopee & Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%',
+    description: 'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Sale Hunter - Săn Mã Shopee & Chuyển Đổi Link',
+      },
+    ],
+    locale: 'vi_VN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sale Hunter - Săn Mã Shopee & Chuyển Đổi Link Nhận Voucher FB 22% & YouTube 20%',
+    description: 'Chuyển đổi link Shopee để tự động áp dụng voucher FB 22%, YouTube 20% độc quyền và nhận ưu đãi tốt nhất.',
+    images: ['/og-image.jpg'],
+  },
 };
 
 export const viewport: Viewport = {

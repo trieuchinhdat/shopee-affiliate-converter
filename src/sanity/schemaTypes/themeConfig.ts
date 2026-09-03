@@ -19,6 +19,10 @@ export const themeConfig = defineType({
       title: '⚡ Tiện Ích Trang Chủ & Lưu Ý',
     },
     {
+      name: 'desktop_restriction',
+      title: '💻 Chặn Desktop & Mã QR',
+    },
+    {
       name: 'zalo_widget',
       title: '💬 Nhóm Zalo & Chatbox',
     },
@@ -295,6 +299,40 @@ export const themeConfig = defineType({
       type: 'boolean',
       group: 'home_sections',
       initialValue: true,
+    }),
+
+    // --- CÀI ĐẶT CHẶN DESKTOP & MODAL QR ---
+    defineField({
+      name: 'blockDesktopConvert',
+      title: '🚫 Bật Chặn dán & Chuyển đổi link trên Desktop',
+      description: 'Khi bật: Người dùng máy tính sẽ không thể dán link trực tiếp mà được hướng dẫn quét mã QR bằng điện thoại để mở App Shopee nhận mã giảm giá tối ưu.',
+      type: 'boolean',
+      group: 'desktop_restriction',
+      initialValue: true,
+    }),
+    defineField({
+      name: 'desktopButtonText',
+      title: 'Chữ trên nút bấm chính ở Desktop',
+      type: 'string',
+      group: 'desktop_restriction',
+      initialValue: 'QUÉT MÃ MỞ TRÊN ĐIỆN THOẠI',
+      hidden: ({ parent }) => parent?.blockDesktopConvert === false,
+    }),
+    defineField({
+      name: 'desktopModalTitle',
+      title: 'Tiêu đề Popup QR trên Desktop',
+      type: 'string',
+      group: 'desktop_restriction',
+      initialValue: 'Mở trên điện thoại để nhận mã 25%',
+      hidden: ({ parent }) => parent?.blockDesktopConvert === false,
+    }),
+    defineField({
+      name: 'desktopModalSubtitle',
+      title: 'Mô tả / Phụ đề Popup QR',
+      type: 'string',
+      group: 'desktop_restriction',
+      initialValue: 'Mã giảm giá Shopee độc quyền và tính năng tự động mở App hoạt động tối ưu nhất trên điện thoại di động.',
+      hidden: ({ parent }) => parent?.blockDesktopConvert === false,
     }),
 
     // --- 5. CÀI ĐẶT THẺ NHÓM ZALO TRÊN TRANG CHỦ ---
