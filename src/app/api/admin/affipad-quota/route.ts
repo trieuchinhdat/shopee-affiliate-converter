@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         success: true,
         enabled: config.enableAffipad !== false,
+        fallbackVoucherUrl: config.fallbackVoucherUrl || null,
+        fallbackNotice: config.fallbackNotice || null,
         totalAccounts: 0,
         activeAccounts: 0,
         totalLimit: 0,
@@ -40,6 +42,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       enabled: config.enableAffipad !== false,
+      fallbackVoucherUrl: config.fallbackVoucherUrl || null,
+      fallbackNotice: config.fallbackNotice || null,
       totalAccounts: accounts.length,
       activeAccounts: activeAccountsCount,
       totalLimit,

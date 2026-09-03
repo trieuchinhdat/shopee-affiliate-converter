@@ -187,6 +187,9 @@ export interface AppConfig {
   enableAffipad?: boolean;
   affipadAccounts?: AffipadAccount[];
   affipadCacheTtlHours?: number;
+  // Fallback Voucher Hub Settings (khi hết 1.000 lượt AffiPad hoặc API lỗi)
+  fallbackVoucherUrl?: string;
+  fallbackNotice?: string;
   // Telegram Notification Settings
   enableTelegramNotify?: boolean;
   telegramBotToken?: string;
@@ -200,6 +203,9 @@ export interface ConvertResult {
   product?: ShopeeProduct;
   links?: UniversalLinks;
   vouchers?: VoucherItem[];
+  isFallback?: boolean;
+  fallbackNotice?: string;
+  directRedirectUrl?: string;
   savingsEstimate?: {
     percent: number;
     amount: number;

@@ -316,6 +316,37 @@ export default function AdminPage() {
                   })}
                 </div>
               </div>
+
+              {/* Fallback Voucher Hub Status */}
+              <div className="pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-slate-400">Dự phòng khi hết 1.000 lượt:</span>
+                  {affipadData?.fallbackVoucherUrl ? (
+                    <span className="text-emerald-400 font-medium flex items-center gap-1">
+                      <span>✓ Đã cấu hình Kho Voucher</span>
+                      <a
+                        href={affipadData.fallbackVoucherUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-slate-500 hover:text-slate-300 underline font-mono text-[10px]"
+                      >
+                        ({affipadData.fallbackVoucherUrl.substring(0, 32)}...)
+                      </a>
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-medium">
+                      ⚠️ Chưa cấu hình Link Kho Voucher Dự Phòng
+                    </span>
+                  )}
+                </div>
+                <Link
+                  href="/studio/structure/appConfig"
+                  className="text-[11px] text-orange-400 hover:text-orange-300 hover:underline inline-flex items-center gap-1 shrink-0"
+                >
+                  <span>Cài đặt Link Dự Phòng</span>
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="rounded-lg bg-white/[0.02] border border-dashed border-white/10 p-4 text-center space-y-2">
@@ -325,11 +356,20 @@ export default function AdminPage() {
               <p className="text-[11px] text-slate-400 max-w-md mx-auto">
                 Hãy vào Sanity Studio để thêm tài khoản AffiPad (mỗi tài khoản miễn phí 1.000 lượt/tháng). Hệ thống sẽ tự động xoay tua và cấp link mã Facebook cho 100% khách hàng.
               </p>
+              <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-center gap-2 text-xs">
+                <span className="text-slate-400">Trạng thái Link Kho Voucher Dự Phòng:</span>
+                {affipadData?.fallbackVoucherUrl ? (
+                  <span className="text-emerald-400 font-medium">✓ Đã cấu hình (Đang làm tuyến dự phòng chính)</span>
+                ) : (
+                  <span className="text-amber-400 font-medium">⚠️ Chưa cấu hình Link Dự Phòng</span>
+                )}
+              </div>
+
               <Link
                 href="/studio/structure/appConfig"
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-500 text-black font-bold text-xs hover:bg-orange-400 transition-colors mt-1"
               >
-                <span>Cấu hình tài khoản ngay</span>
+                <span>Cấu hình trong Sanity Studio</span>
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </div>

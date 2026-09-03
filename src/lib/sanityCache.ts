@@ -50,6 +50,8 @@ export async function getAppConfigCached(ttl: number = 60): Promise<AppConfig> {
         enableAffipad,
         affipadAccounts,
         affipadCacheTtlHours,
+        fallbackVoucherUrl,
+        fallbackNotice,
         enableTelegramNotify,
         telegramBotToken,
         telegramChatId,

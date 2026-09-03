@@ -10,6 +10,8 @@ interface VoucherButtonsProps {
   productName?: string;
   product?: ShopeeProduct;
   noticeText?: string;
+  isFallback?: boolean;
+  fallbackNotice?: string;
 }
 
 export default function VoucherButtons({
@@ -18,6 +20,8 @@ export default function VoucherButtons({
   productName,
   product,
   noticeText,
+  isFallback,
+  fallbackNotice,
 }: VoucherButtonsProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -291,6 +295,14 @@ export default function VoucherButtons({
           Tự động áp mã vào App
         </span>
       </div>
+
+      {/* Fallback Voucher Hub Notice */}
+      {isFallback && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs font-medium animate-fadeIn">
+          <Zap className="h-4 w-4 text-orange-400 shrink-0 fill-orange-400" />
+          <span>{fallbackNotice || '⚡ Đang áp dụng Kho Voucher Toàn Sàn Shopee - Bấm mở App để lưu mã!'}</span>
+        </div>
+      )}
 
       {/* Ticket Cards List */}
       <div className="grid gap-3">

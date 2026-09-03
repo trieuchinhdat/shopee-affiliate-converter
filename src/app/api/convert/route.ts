@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveShopeeProduct, isValidShopeeUrl, extractShopeeUrl, extractShopeeIds } from '@/lib/shopee-resolver';
-import { generateAllUniversalLinks, resolveAndExtractFacebookPayload, DEFAULT_FB_PAYLOAD } from '@/lib/universal-link';
+import { generateAllUniversalLinks } from '@/lib/universal-link';
 import { getAppConfigCached, getActiveVouchersCached, getThemeConfigCached } from '@/lib/sanityCache';
 import { affipadService } from '@/lib/affipad-service';
-import { ConvertResult } from '@/lib/types';
+import { ConvertResult, UniversalLinks } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,67 +53,81 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const product = await resolveShopeeProduct(cleanUrl);
-    const [config, vouchers] = await Promise.all([getAppConfigCached(60), getActiveVouchersCached(60)]);
+    const config = await getAppConfigCached(60);
 
-    let selectedFbPayload = DEFAULT_FB_PAYLOAD;
+    // ⚡ KIỂM TRA NHANH (0ms): Nếu toàn bộ tài khoản AffiPad đã cạn kiệt 1.000 lượt và có Link Kho Voucher Dự Phòng
+    // Thực hiện Direct Auto-Redirect ngay lập tức để ghi nhận hoa hồng gián tiếp cho khách
+    const affipadConfigured = config.enableAffipad !== false && config.affipadAccounts && config.affipadAccounts.length > 0;
+    const hasAvailableAffipad = affipadConfigured && affipadService.hasAvailableAccounts(config.affipadAccounts!);
 
-    if (config.facebookSampleUrls && config.facebookSampleUrls.length > 0) {
-      const activeUrls = config.facebookSampleUrls.filter(
-        (item) => item.isActive !== false && item.url && item.url.trim()
-      );
-
-      if (activeUrls.length > 0) {
-        // Try active URLs in order (top item first), pick the first one that resolves successfully
-        for (const item of activeUrls) {
-          try {
-            const parsed = await resolveAndExtractFacebookPayload(item.url);
-            if (parsed) {
-              selectedFbPayload = parsed;
-              break;
-            }
-          } catch (err) {
-            console.error('[API Convert] Error resolving FB sample item:', err);
-          }
-        }
-      }
+    if (!hasAvailableAffipad && config.fallbackVoucherUrl && config.fallbackVoucherUrl.trim()) {
+      const fallbackUrl = config.fallbackVoucherUrl.trim();
+      return NextResponse.json<ConvertResult>({
+        success: true,
+        isFallback: true,
+        directRedirectUrl: fallbackUrl,
+        fallbackNotice: config.fallbackNotice || 'Đang mở Kho Voucher Shopee để nhận ưu đãi...',
+      });
     }
 
-    let links = generateAllUniversalLinks(
-      product.shopId,
-      product.itemId,
-      config.affiliateId,
-      config.defaultSubId || 'web_converter',
-      selectedFbPayload
-    );
+    const [product, vouchers] = await Promise.all([
+      resolveShopeeProduct(cleanUrl),
+      getActiveVouchersCached(60),
+    ]);
 
-    // ⚡ 1. Try AffiPad Multi-Account Pool if enabled (Generates 100% working live credential_token)
-    if (config.enableAffipad !== false && config.affipadAccounts && config.affipadAccounts.length > 0) {
+    let links: UniversalLinks;
+    let isFallback = false;
+    let fallbackNotice: string | undefined = undefined;
+
+    // ⚡ 1. Ưu tiên chuyển đổi qua AffiPad Multi-Account Pool (Tạo link có credential_token sống cho từng sản phẩm)
+    let directLink: string | null = null;
+    if (affipadConfigured) {
       try {
         const affResult = await affipadService.convertProductUrl(
           cleanUrl,
           product.shopId,
           product.itemId,
-          config.affipadAccounts,
+          config.affipadAccounts!,
           config.affipadCacheTtlHours || 12
         );
 
         if (affResult && affResult.link) {
-          const directLink = affResult.link;
-          links = {
-            facebook: {
-              fb25: directLink,
-              fb22: directLink,
-              fb20: directLink,
-            },
-            youtube: directLink,
-            instagram: directLink,
-            zalo: directLink,
-          };
+          directLink = affResult.link;
         }
       } catch (affErr) {
-        console.error('[API Convert] Affipad conversion fallback triggered:', affErr);
+        console.error('[API Convert] Affipad conversion error:', affErr);
       }
+    }
+
+    if (directLink) {
+      // Thành công với AffiPad
+      links = {
+        facebook: {
+          fb25: directLink,
+          fb22: directLink,
+          fb20: directLink,
+        },
+        youtube: directLink,
+        instagram: directLink,
+        zalo: directLink,
+      };
+    } else if (config.fallbackVoucherUrl && config.fallbackVoucherUrl.trim()) {
+      // ⚡ 2. Kích hoạt Direct Auto-Redirect đến Kho Voucher Shopee khi hết 1.000 lượt (hoa hồng gián tiếp)
+      const fallbackUrl = config.fallbackVoucherUrl.trim();
+      return NextResponse.json<ConvertResult>({
+        success: true,
+        isFallback: true,
+        directRedirectUrl: fallbackUrl,
+        fallbackNotice: config.fallbackNotice || 'Đang mở Kho Voucher Shopee để nhận ưu đãi...',
+      });
+    } else {
+      // ⚡ 3. Dự phòng cấp 3: Tạo Universal Link sản phẩm cơ bản
+      links = generateAllUniversalLinks(
+        product.shopId,
+        product.itemId,
+        config.affiliateId,
+        config.defaultSubId || 'web_converter'
+      );
     }
 
     let maxPercent = 22;
@@ -130,6 +144,8 @@ export async function POST(req: NextRequest) {
       product,
       links,
       vouchers,
+      isFallback,
+      fallbackNotice,
       savingsEstimate: {
         percent: maxPercent,
         amount: estimatedSavings,

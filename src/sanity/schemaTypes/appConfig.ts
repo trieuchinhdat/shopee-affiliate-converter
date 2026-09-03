@@ -147,6 +147,27 @@ export const appConfig = defineType({
       hidden: ({ parent }) => parent?.enableAffipad === false,
     }),
     defineField({
+      name: 'fallbackVoucherUrl',
+      title: 'Link Kho Voucher Shopee Dự Phòng (Khi hết hạn mức 1.000 lượt)',
+      description:
+        'Dán link tiếp thị liên kết Shopee dẫn về Kho Voucher / Trang Chiến Dịch Sale của bạn (dạng https://s.shopee.vn/...). Khi hết 1.000 lượt AffiPad hoặc API lỗi, hệ thống sẽ tự động dùng link này để cấp mã cho khách và đảm bảo 100% ghi nhận hoa hồng.',
+      type: 'url',
+      group: 'affipad',
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: ['http', 'https'],
+        }).error('Vui lòng nhập đường link hợp lệ (https://...)'),
+    }),
+    defineField({
+      name: 'fallbackNotice',
+      title: 'Thông báo hiển thị khi dùng Link Kho Voucher Dự Phòng',
+      description:
+        'Dòng ghi chú hiển thị cho khách hàng khi hệ thống kích hoạt chế độ Kho Voucher Shopee.',
+      type: 'string',
+      group: 'affipad',
+      initialValue: '⚡ Đang áp dụng Kho Voucher Toàn Sàn Shopee - Bấm mở App để lưu mã!',
+    }),
+    defineField({
       name: 'facebookSampleUrls',
       title: 'Danh sách Link Facebook Mẫu (Pool Token FB Sống)',
       description:

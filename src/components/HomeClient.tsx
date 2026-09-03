@@ -21,6 +21,7 @@ interface HomeClientProps {
 
 export default function HomeClient({ initialTheme, initialSuggestedVouchers = [] }: HomeClientProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [theme, setTheme] = useState<ThemeConfig>(initialTheme);
@@ -41,6 +42,7 @@ export default function HomeClient({ initialTheme, initialSuggestedVouchers = []
   const handleConvert = async (url: string) => {
     setIsLoading(true);
     setErrorMsg(null);
+    setIsRedirecting(false);
 
     try {
       const res = await fetch('/api/convert', {
@@ -53,6 +55,13 @@ export default function HomeClient({ initialTheme, initialSuggestedVouchers = []
 
       if (!res.ok || !data.success) {
         setErrorMsg(data.error || 'Không thể chuyển đổi link Shopee này.');
+        return;
+      }
+
+      // ⚡ Direct Auto-Redirect: Tự động mở thẳng App Shopee sang Kho Voucher để ghi nhận hoa hồng gián tiếp
+      if (data.directRedirectUrl) {
+        setIsRedirecting(true);
+        window.location.href = data.directRedirectUrl;
         return;
       }
 
@@ -121,6 +130,14 @@ export default function HomeClient({ initialTheme, initialSuggestedVouchers = []
             <SocialProofTicker messages={theme?.socialProofMessages} />
           )}
 
+          {/* Redirecting Notice Banner */}
+          {isRedirecting && (
+            <div className="rounded-2xl border border-orange-500/40 bg-orange-950/40 p-3 text-center text-xs font-semibold text-orange-300 flex items-center justify-center gap-2 animate-fadeIn">
+              <span className="h-2 w-2 rounded-full bg-orange-400 animate-ping" />
+              <span>Đang mở App Shopee để lưu mã giảm giá toàn sàn...</span>
+            </div>
+          )}
+
           {/* Error Alert */}
           {errorMsg && (
             <div className="rounded-2xl border border-rose-500/30 bg-rose-950/30 p-2.5 text-center text-xs font-medium text-rose-300">
@@ -148,6 +165,8 @@ export default function HomeClient({ initialTheme, initialSuggestedVouchers = []
                 product={result.product}
                 productName={result.product.productName}
                 noticeText={theme?.voucherNoticeText}
+                isFallback={result.isFallback}
+                fallbackNotice={result.fallbackNotice}
               />
             </div>
           )}

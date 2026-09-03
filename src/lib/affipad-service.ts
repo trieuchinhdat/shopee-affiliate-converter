@@ -23,6 +23,22 @@ class AffipadService {
   }
 
   /**
+   * Helper: Check if pool has at least 1 account that is active and not marked as depleted
+   */
+  public hasAvailableAccounts(accounts: AffipadAccount[]): boolean {
+    const now = Date.now();
+    const activeAccounts = (accounts || []).filter(
+      (acc) => acc.isActive !== false && acc.apiKey && acc.toolId && acc.apiKey.trim() && acc.toolId.trim()
+    );
+    if (activeAccounts.length === 0) return false;
+
+    return activeAccounts.some((acc) => {
+      const depletedUntil = depletedAccounts.get(acc.toolId);
+      return !depletedUntil || depletedUntil <= now;
+    });
+  }
+
+  /**
    * Cleans expired cache entries periodically
    */
   private cleanExpiredCache() {
